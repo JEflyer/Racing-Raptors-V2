@@ -1,7 +1,7 @@
 //SPDF-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "./interfaces/IMain.sol";
+import "./interfaces/IGame.sol";
 import "./interfaces/IMinter.sol";
 
 import "./libraries/minterLib.sol";
@@ -14,6 +14,14 @@ import "@openzeppelin/ontracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/blob/master/contracts/utils/Context.sol";
 
 contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, Context {
+
+    event SoldOut(string message);
+    event PriceIncrease(uint newPrice);
+    event NewGameContract(address gameContract);
+    event NewAdmin(address newAdmin);
+    event StatsUpdated(uint16 tokenId, Stats stats);
+    event Mint(address to, uint16 tokenId);
+
     address public admin;
     
     bool private active;
@@ -21,6 +29,8 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
     string private CID;
     string private immutable extension;
     string private immutable notRevealed;
+
+    string private soldOutMessage;
 
     mapping(uint16 => Stats) private raptorStats; //token id => stats
 
@@ -33,13 +43,22 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
     address payable private paymentSplitter;
     address private gameAddress;
 
+    address[] rewardedAddresses = [
+        //holders of racing raptors v1 NFTs 
+    ]
+
+    uint8[] rewardedAmount = [
+        //amounts held for each holder
+    ]
+
     constructor(
         address _paymentSplitter,
         string memory _baseURI,
         string memory _CID,
         string memory _notRevealed,
         string memory _extension,
-        uint16 totalLimit
+        uint16 totalLimit,
+        string memory _soldOutMessage
         )ERC721("Racing Raptors V2", "RR"){
             baseURI = _baseURI;
             CID = _CID;
@@ -48,13 +67,15 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
             active = true;
             totalSupply = 0;
             price = 2 * 10**18;
-            admin = msg.sender;
+            admin = _msgSender();
             paymentSplitter = payable(_paymentSplitter);
+            soldOutMessage = _soldOutMessage;
             reward();
     }
 
     function updateGameAddress(address _gameAddress) public onlyAdmin {
         gameAddress = _gameAddress;
+        emit NewGameContract(_gameAddress);
     }
 
     function updateSplitter(address _paymentSplitter) public onlyAdmin {
@@ -76,12 +97,12 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
     }
 
     modifier onlyAdmin{
-        require(msg.sender == admin);
+        require(_msgSender() == admin);
         _;
     }
 
     modifier onlyGameAddress{
-        require(msg.sender == gameAddress, "Only the game contract can call this function");
+        require(_msgSender() == gameAddress, "Only the game contract can call this function");
         _;
     }
 
@@ -95,6 +116,7 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
 
     function setAdmin(address _admin) public onlyAdmin{
         admin = _admin;
+        emit NewAdmin(_admin);
     }
 
     function tokenURI(uint16 _tokenId) public view virtual override returns(string memory uri){
@@ -108,9 +130,12 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
     function mint(uint8 _amount) public payable {
         require(active, "This function is not available right now");
 
-        if(msg.sender != feeTo){
+        if(_msgSender() != feeTo){
             require(msg.value == getPrice(_amount),"Not enough funds sent");
-            if(crossesThreshold(_amount)) updatePrice();
+            if(minterLib.crossesThreshold(_amount)){ 
+                price = updatePrice(price);
+                emit PriceIncrease(price);
+            } 
         }
 
         require(_amount <= 10, "You are trying to mint too many");
@@ -121,9 +146,11 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
 
         for(uint8 i =0; i< _amount; i++){
             totalSupply += 1;
-            _mint(msg.sender, totalSupply);
+            _mint(_msgSender(), totalSupply);
             raptorStats[totalSupply] = Stats(1,1,1,0,0,0,0,0,0)
             _approve(gameAddress, totalSupply);
+            emit Mint(_msgSender, totalSupply);
+            if(totalSupply == totalLimit) {emit SoldOut(soldOutMessage);}
         }
     }
 
@@ -143,16 +170,9 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
     function updateStats(Stats _stats, uint16 _id) external onlyGameAddress returns(bool){
         require(_exists(_id), "This token does not exist");
         raptorStats[_id] = _stats;
+        emit StatsUpdated(_id, _stats);
         return true;
     }
-
-    address[] rewardedAddresses = [
-        //holders of racing raptors v1 NFTs 
-    ]
-
-    uint8[] rewardedAmount = [
-        //amounts held for each holder
-    ]
 
     function reward() internal {
         for(uint8 i = 0; i < rewardedAddresses.length(); i++){
