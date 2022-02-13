@@ -16,6 +16,7 @@ import "@openzeppelin/contracts/blob/master/contracts/utils/Context.sol";
 contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, Context {
 
     event SoldOut(string message);
+    event PorscheWinner(address winner);
     event PriceIncrease(uint newPrice);
     event NewGameContract(address gameContract);
     event NewAdmin(address newAdmin);
@@ -127,6 +128,16 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
 
     }
 
+    function chooseWinner() internal returns(address) {
+        //use chainink to get random number between 1 & 10000
+        tokenId = getRandom(1,10000);
+
+        //find owner 
+        return ownerOf(tokenId);
+
+    }
+
+
     function mint(uint8 _amount) public payable {
         require(active, "This function is not available right now");
 
@@ -150,7 +161,11 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
             raptorStats[totalSupply] = Stats(1,1,1,0,0,0,0,0,0)
             _approve(gameAddress, totalSupply);
             emit Mint(_msgSender, totalSupply);
-            if(totalSupply == totalLimit) {emit SoldOut(soldOutMessage);}
+            if(totalSupply == totalLimit) {
+                emit SoldOut(soldOutMessage);
+                address winner = chooseWinner();
+                emit PorscheWinner(winner);
+            }
         }
     }
 

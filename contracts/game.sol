@@ -39,12 +39,15 @@ contract Game is IGame, IERC721Receiver, Context {
         uint8 _feePercent,
         address _communityWallet
     ){
-        require(_feePercent < 5);
+        require(_feePercent == 5);
         minterContract = _minterContract;
         admin = _msgSender();
         feePercent = _feePercent;
         communityWallet = _communityWallet;
     }
 
+    function _quickPlayStart(uint16[] raptors, uint prizePool) internal returns (bool){
+
+    }
 
 }

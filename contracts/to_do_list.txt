@@ -1,0 +1,11 @@
+Minter Contract
+Chainlink randomness
+
+Game Contract
+Chainlink randomness
+racing logic
+fight logic
+quickplay
+competitive
+deathrace
+competitive ranking system
