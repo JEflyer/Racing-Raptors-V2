@@ -27,6 +27,8 @@ contract Game is IGame, IERC721Receiver, Context {
     event NewAdmin(address admin);
     event UpdatedStats(uint16 raptor, Stats stats);
 
+    event RaceChosen(string raceType);
+
     address private admin;
     address private immutable minterContract;
 
@@ -34,12 +36,21 @@ contract Game is IGame, IERC721Receiver, Context {
 
     address private immutable communityWallet;
 
-    enum CurrentRace = {
+    enum CurrentRace {
         StandBy,
         QuickPlay,
         Competitive,
         DeathRace
     }
+
+    string[] raceNames =[
+        "StandBy",
+        "QuickPlay",
+        "Competitive",
+        "DeathRace"
+    ]
+
+    CurrentRace public currentRace;
 
     constructor(
         address _minterContract,
@@ -51,10 +62,17 @@ contract Game is IGame, IERC721Receiver, Context {
         admin = _msgSender();
         feePercent = _feePercent;
         communityWallet = _communityWallet;
+        currentRace = CurrentRace(0);
     }
 
     function _payOut(uint payout,uint communityPayout) internal payable returns(bool){
 
+    }
+
+    function raceSelect(uint8 choice)public onlyAdmin{
+        require(choice >= 0 && choice <=3);
+        currentRace = CurrentRace(choice);
+        emit RaceChosen(raceNames[choice]);
     }
 
     //quickplay functions
@@ -88,6 +106,27 @@ contract Game is IGame, IERC721Receiver, Context {
     }
 
     function _compFight(uint16[] raptorsFighting) internal returns (uint16 winner){
+
+    }
+
+    //DeathRace functions
+    function enterRaptorIntoDR(uint16 raptor) public payable returns(bool){
+
+    }
+
+    function _deathRaceStart(uint16[] raptors, uint prizePool) internal returns(bool){
+
+    }
+
+    function _deathRaceEnd(uint16 winner, uint payout, uint communityPayout) internal payable returns(bool){
+
+    }
+
+    function _fightToTheDeath(uint16[] raptorsFighting) internal returns(bool){
+
+    }
+
+    function _kill(uint16 raptor) internal returns (bool){
 
     }
 
