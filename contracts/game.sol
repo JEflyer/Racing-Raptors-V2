@@ -53,8 +53,44 @@ contract Game is IGame, IERC721Receiver, Context {
         communityWallet = _communityWallet;
     }
 
+    function _payOut(uint payout,uint communityPayout) internal payable returns(bool){
+
+    }
+
+    //quickplay functions
     function _quickPlayStart(uint16[] raptors, uint prizePool) internal returns (bool){
 
     }
+
+    function enterRaptorIntoQuickPlay(uint16 raptor) public payable returns (bool){
+
+    }
+
+    function _quickPlayEnd(uint16 winner, uint payout, uint communityPayout) internal payable returns(bool){
+
+    }
+
+    function _quickPlayFight(uint16[] raptorsFighting) internal returns (uint16 winner){
+
+    }
+
+    //competitive functions
+    function enterRaptorIntoComp(uint16 raptor) public payable returns (bool){
+
+    }
+
+    function _compStart(uint16[] raptors, uint prizePool) internal returns(bool){
+
+    }
+    
+    function _compEnd(uint16 winner, uint payout, uint communityPayout) internal payable returns(bool){
+
+    }
+
+    function _compFight(uint16[] raptorsFighting) internal returns (uint16 winner){
+
+    }
+
+    
 
 }
