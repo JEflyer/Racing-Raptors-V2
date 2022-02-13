@@ -34,6 +34,13 @@ contract Game is IGame, IERC721Receiver, Context {
 
     address private immutable communityWallet;
 
+    enum CurrentRace = {
+        StandBy,
+        QuickPlay,
+        Competitive,
+        DeathRace
+    }
+
     constructor(
         address _minterContract,
         uint8 _feePercent,

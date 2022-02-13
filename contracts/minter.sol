@@ -158,7 +158,7 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
         for(uint8 i =0; i< _amount; i++){
             totalSupply += 1;
             _mint(_msgSender(), totalSupply);
-            raptorStats[totalSupply] = Stats(1,1,1,0,0,0,0,0,0)
+            raptorStats[totalSupply] = Stats(1,1,1,0,0,0,0,0,0,false);
             _approve(gameAddress, totalSupply);
             emit Mint(_msgSender, totalSupply);
             if(totalSupply == totalLimit) {
@@ -195,6 +195,7 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
                 totalSupply +=1;
                 _mint(rewardedAddresses, totalSupply);
                 _approve(gameAddress, totalSupply);
+                raptorStats[totalSupply] = Stats(1,1,1,0,0,0,0,0,0,true);
             }
         }
     }
