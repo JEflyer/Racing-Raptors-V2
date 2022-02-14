@@ -1,6 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+
+import "./libraries/simpleOracleLibrary.sol";
+
 library minterLib {
 
     function updatePrice(uint _price)internal returns(uint price) {
@@ -14,6 +17,10 @@ library minterLib {
         } else {
             answer = false;
         }
+    }
+
+    function getRandom(uint outOf) internal view returns(uint){
+        return (SimpleOracleLibrary.getRandomNumber() % outOf) + 1;
     }
 
     function getAmounts(uint _amount, uint _totalSupply) internal pure view returns(uint amountBefore, uint amountAfter){

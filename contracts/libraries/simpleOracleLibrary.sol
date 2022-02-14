@@ -29,7 +29,7 @@ library SimpleOracleLibrary is VRFConsumerBase {
 
     // Requests Randomness
     function getRandomNumber() internal returns(uint256 rand) {
-        VRF storage vrf = crfStorage();
+        VRF storage vrf = vrfStorage();
         require(vrf.LINK.balanceOf(address(this)) >= vrf.fee, "Not enough LINK balance");
         rand = uint256(requestRAndomness(vrf.keyHash, vrf.fee));
     }

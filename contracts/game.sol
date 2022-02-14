@@ -9,9 +9,10 @@ import "./libraries/gameLib.sol";
 import "./structs/stats.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/blob/master/contracts/utils/Context.sol";
 
-contract Game is IGame, IERC721Receiver, Context {
+contract Game is IGame, IERC721Receiver, Context, IERC721, Stats, gameLib, IMinter {
 
     event QuickPlayRaceStarted(uint16[] raptors, uint prizePool);
     event QuickPlayRaceWinner(uint16 raptor, uint prize);
@@ -35,6 +36,10 @@ contract Game is IGame, IERC721Receiver, Context {
     uint8 private immutable feePercent;
 
     address private immutable communityWallet;
+
+    uint16[] public currentRaptors = new uint16[](8);
+
+    uint256 public pot;
 
     enum CurrentRace {
         StandBy,
@@ -63,11 +68,10 @@ contract Game is IGame, IERC721Receiver, Context {
         feePercent = _feePercent;
         communityWallet = _communityWallet;
         currentRace = CurrentRace(0);
+        pot =0;
     }
 
-    function _payOut(uint payout,uint communityPayout) internal payable returns(bool){
-
-    }
+    
 
     modifier onlyAdmin (
         require(msg.sender == admin, "You can not call this function");
@@ -86,46 +90,93 @@ contract Game is IGame, IERC721Receiver, Context {
         emit RaceChosen(raceNames[choice]);
     }
 
+    
+
     //Quickplay Entry
     function enterRaptorIntoQuickPlay(uint16 raptor) public payable returns (bool){
 
+        //check if there are spaces left
+        require(currentRaptors.length() <=8, "You can not join at this time");
+
+        //check the raptor is owned by _msgSender()
+        require(gameLib.owns(raptor), "You do not own this raptor");
+
+        //check that raptor is not on cooldown
+        require(gameLib.getStats(raptor).cooldownTime < block.TimeStamp(), "Your raptor is not available right now");
+
+        //check that msg.value is the entrance fee
+        require(msg.value == QPFee, "You have not sent enough funds");
+
+        //add msg.value to pot
+        pot += msg.value;
+
+        //add raptor to the queue
+        curentRaptors[currentPosition];
+
+        //increment current Position
+        currentPosition = currentRaptors.length();
+
+        //if 8 entrants then start race
+        if(currentRaptors == 8){
+            gameLib._quickPlayStart(currentRaptors, pot);
+            emit QuickPlayRaceStarted(currentRaptors, pot);
+        } 
     }
 
     //Competitive Entry
     function enterRaptorIntoComp(uint16 raptor) public payable returns (bool){
+        //check if there are spaces left
+        require(currentRaptors.length <=8, "You can not join at this time");
 
+        //check the raptor is owned by _msgSender()
+        require(gameLib.owns(raptor), "You do not own this raptor");
+
+        //check that msg.value is the entrance fee
+        require(msg.value == CompFee, "You have not sent enough funds");
+
+        //add msg.value to pot
+        pot += msg.value;
+
+        //add raptor to the queue
+        curentRaptors[currentPosition];
+
+        //increment current Position
+        currentPosition = currentRaptors.length()
+
+        //if 8 entrants then start race
+        if(currentRaptors == 8){
+            gameLib._compStart(currentRaptors, pot);
+            emit CompetitiveRaceStarted(currentRaptors, pot);
+        } 
     }
 
     //DeathRace Entry
     function enterRaptorIntoDR(uint16 raptor) public payable returns(bool){
+        //check if there are spaces left
+        require(currentRaptors.length <=8, "You can not join at this time");
 
+        //check the raptor is owned by _msgSender()
+        require(gameLib.owns(raptor), "You do not own this raptor");
+
+        //check that msg.value is the entrance fee
+        require(msg.value == DRFee, "You have not sent enough funds");
+
+        //add msg.value to pot
+        pot += msg.value;
+
+        //add raptor to the queue
+        curentRaptors[currentPosition];
+
+        //increment current Position
+        currentPosition = currentRaptors.length()
+
+        //if 8 entrants then start race
+        if(currentRaptors == 8){
+            gameLib._deathRaceStart(currentRaptors, pot);
+            emit DeathRaceStarted(currentRaptors, pot);
+        }  
     }
 
-
-    //Race Start
-    function RaceStart() public onlyAdmin{
-        //selects different paths based on the state position of the enumerator chosen by the raceSelect 
-
-        //Standby
-        if(currentRace == 0){
-            revert("You must choose a race");
-        }
-        
-        //Quickplay
-        if(currentRace == 1){
-
-        }
-
-        //Competitive
-        if(currentRace == 2){
-
-        }
-
-        //DeathRace
-        if(currentRace ==3){
-            
-        }
-    }
     
 
     

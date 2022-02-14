@@ -8,6 +8,8 @@ import "./libraries/minterLib.sol";
 
 import "./structs/stats.sol";
 
+
+
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/ontracts/token/ERC721/extensions/IERC721Metadata.sol";
@@ -130,7 +132,7 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
 
     function chooseWinner() internal returns(address) {
         //use chainink to get random number between 1 & 10000
-        tokenId = getRandom(1,10000);
+        tokenId = minterLib.getRandom(10000);
 
         //find owner 
         return ownerOf(tokenId);
