@@ -69,66 +69,64 @@ contract Game is IGame, IERC721Receiver, Context {
 
     }
 
+    modifier onlyAdmin (
+        require(msg.sender == admin, "You can not call this function");
+        _;
+    )
+
+    modifier isTwo(uint16[] raptors){
+        require(raptors.length == 2, "Too many raptors");
+        _;
+    }
+
+    //Select Race
     function raceSelect(uint8 choice)public onlyAdmin{
         require(choice >= 0 && choice <=3);
         currentRace = CurrentRace(choice);
         emit RaceChosen(raceNames[choice]);
     }
 
-    //quickplay functions
-    function _quickPlayStart(uint16[] raptors, uint prizePool) internal returns (bool){
-
-    }
-
+    //Quickplay Entry
     function enterRaptorIntoQuickPlay(uint16 raptor) public payable returns (bool){
 
     }
 
-    function _quickPlayEnd(uint16 winner, uint payout, uint communityPayout) internal payable returns(bool){
-
-    }
-
-    function _quickPlayFight(uint16[] raptorsFighting) internal returns (uint16 winner){
-
-    }
-
-    //competitive functions
+    //Competitive Entry
     function enterRaptorIntoComp(uint16 raptor) public payable returns (bool){
 
     }
 
-    function _compStart(uint16[] raptors, uint prizePool) internal returns(bool){
-
-    }
-    
-    function _compEnd(uint16 winner, uint payout, uint communityPayout) internal payable returns(bool){
-
-    }
-
-    function _compFight(uint16[] raptorsFighting) internal returns (uint16 winner){
-
-    }
-
-    //DeathRace functions
+    //DeathRace Entry
     function enterRaptorIntoDR(uint16 raptor) public payable returns(bool){
 
     }
 
-    function _deathRaceStart(uint16[] raptors, uint prizePool) internal returns(bool){
 
+    //Race Start
+    function RaceStart() public onlyAdmin{
+        //selects different paths based on the state position of the enumerator chosen by the raceSelect 
+
+        //Standby
+        if(currentRace == 0){
+            revert("You must choose a race");
+        }
+        
+        //Quickplay
+        if(currentRace == 1){
+
+        }
+
+        //Competitive
+        if(currentRace == 2){
+
+        }
+
+        //DeathRace
+        if(currentRace ==3){
+            
+        }
     }
-
-    function _deathRaceEnd(uint16 winner, uint payout, uint communityPayout) internal payable returns(bool){
-
-    }
-
-    function _fightToTheDeath(uint16[] raptorsFighting) internal returns(bool){
-
-    }
-
-    function _kill(uint16 raptor) internal returns (bool){
-
-    }
+    
 
     
 
