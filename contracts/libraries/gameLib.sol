@@ -11,6 +11,27 @@ import "./libraries/simpleOracleLibrary.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 library gameLib {
+    //-------------------------Events-------------------------------//
+    event QuickPlayRaceStarted(uint16[] raptors, uint prizePool);
+    event QuickPlayRaceWinner(uint16 raptor, uint prize);
+
+    event CompetitiveRaceStarted(uint16[] raptors, uint prizePool);
+    event CompetitiveRaceWinner(uint16 raptor, uint prize);
+
+    event InjuredRaptor(uint16 raptor, uint time);
+
+    event DeathRaceStarted(uint16[] raptors, uint prizePool);
+    event DeathRaceWinner(uint16 raptor, uint prize);
+    event RipRaptor(uint16 raptor);
+    //-------------------------Events-------------------------------//
+
+    //-------------------------Modifiers-------------------------------//
+    modifier isTwo(uint16[] raptors){
+        require(raptors.length == 2, "Incorrect Amount of Raptors");
+        _;
+    }
+    //-------------------------Modifiers-------------------------------//
+
     //-------------------------Storage-------------------------------//
     //-------------------------Vars-------------------------------//
 
@@ -63,8 +84,8 @@ library gameLib {
         return IERC721(minterContract).ownerOf(raptor);
     }
 
-    function calcFee(uint pool, uint8 feePercent) internal view pure returns(uint fee){
-        fee = (pool / 100) * feePercent;
+    function calcFee(uint pool) internal view pure returns(uint fee){
+        fee = (pool / 100) * 5;
     }
 
     function getRandom(uint outOf) internal view returns(uint){
@@ -75,6 +96,19 @@ library gameLib {
         payable(getOwner()).transfer(payout);
         _community().transfer(communityPayot);
         return true;
+    }
+
+    function getFighters() internal view pure returns(uint8 raptor1, uint8 raptor2){
+        uint rand = getRandom(147);
+        if(rand == 120 || rand == 0){
+            rand = getRandom(167);
+        }
+        raptor1 = (rand % 5) ;
+        raptor2 = (rand % 8);
+        uint8 counter = 7;
+        if (raptor1 == raptor2){
+            raptor1 = rand % 3;
+        }
     }
 
     //-------------------------Helpers--------------------------------//
@@ -215,8 +249,8 @@ library gameLib {
     }
 
     //QP Fight
-    function _quickPlayFight(uint16[] raptorsFighting) internal isTwo(raptorsFighting) returns (uint16 winner){
-
+    function _quickPlayFight(uint16[] raptorsFighting) internal isTwo(raptorsFighting) {
+        winner
     }
 
     //---------------------------QP--------------------------------------//
@@ -233,7 +267,7 @@ library gameLib {
     }
 
     //Comp Fight
-    function _compFight(uint16[] raptorsFighting) internal isTwo(raptorsFighting) returns (uint16 winner){
+    function _compFight(uint16[] raptorsFighting) internal isTwo(raptorsFighting){
 
     }
 
@@ -251,13 +285,20 @@ library gameLib {
     }
 
     //DR Fight
-    function _fightToTheDeath(uint16[] raptorsFighting) internal isTwo(raptorsFighting) returns(bool){
+    function _fightToTheDeath(uint16[] raptorsFighting) internal isTwo(raptorsFighting) {
 
     }
 
+
+    // function safeTransferFrom(
+    //     address from,
+    //     address to,
+    //     uint256 tokenId
+    // ) external;
+
     //DR Kill/BURN RAPTOR
     function _kill(uint16 raptor) internal returns (bool){
-
+        IERC721(_minter()).safeTransferFrom(ownerOf(raptor),address(0),raptor);
     }
 
     //---------------------------------------DR----------------------------//
