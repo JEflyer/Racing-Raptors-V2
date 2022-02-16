@@ -315,10 +315,15 @@ library gameLib {
             emit InjuredRaptor(fighters[0]);
         }
 
-        emit FightWinner(fightWinner);        
+        emit FightWinner(fightWinner); 
 
-        //modify losses & update 
+        //modify losses/survivals & update 
         for(uint8 i =0; i<8; i++){
+            
+            if(i != fighters[0] || i != fighters[1] || i != raceWinner){
+                stats[i] = increaseDeathRacesSurvived(stats[i]);
+            }
+
             if(i != places[0]){
                 stats[i] = increaseQPLosses(stats[i]);
             }
@@ -338,22 +343,121 @@ library gameLib {
     //----------------------------Comp-----------------------------------//
 
     // //Comp Start
-    // function _compStart(uint16[] raptors, uint prizePool) internal returns(bool){
+    function _compStart(uint16[] raptors, uint prizePool) internal returns(bool){
+        emit CompetitiveRaceStarted(raptors,prizePool);
 
-    // }
+        //get stats for each raptor
+        Stats[] memory stats = new Stats[](8);
+        for (uint8 i =0; i<8;i++){
+            stats[i] = getStats(raptors[i]);
+        }
+
+        //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
+        uint8[2] memory fighters = getFighters();
+        uint8 fightWinner = getFightWinner(fighters[0], fighters[1]);
+        uint8[2] memory indexesToIgnore = [fighters[0], fighters[1]];
+
+
+        //gets the winner & next two places
+        uint8[3] memory places = getWinner(stats,indexesToIgnore);
+
+        //modify states //index 0 = winner; index 1 = second; index 2 = third
+        stats[places[0]] = increaseCompWins(stats[places[0]]);
+        stats[places[0]] = upgradeSpeed(stats[places[0]]);
+        stats[places[1]] = increaseTop3RaceFinishes(stats[places[1]]);
+        stats[places[2]] = increaseTop3RaceFinishes(stats[places[2]]);
+
+        stats[fightWinner] = upgradeStrength(stats[fightWinner]);
+
+        if(fightWinner == fighters[0]){ 
+            stats[fighters[1]] = upgradeAggressiveness(stats[fighters[1]]); 
+            stats[fighters[1]] = addCooldownPeriod(stats[fighters[1]]);
+            emit InjuredRaptor(raptors[fighters[1]]);
+        }else{
+            stats[fighters[0]] = upgradeAggressiveness(stats[fighters[0]]);
+            stats[fighters[0]] = addCooldownPeriod(stats[fighters[0]]);
+            emit InjuredRaptor(raptors[fighters[0]]);
+        }
+
+        emit FightWinner(fightWinner);        
+
+        //modify losses & update 
+        for(uint8 i =0; i<8; i++){
+            if(i != places[0]){
+                stats[i] = increaseCompLosses(stats[i]);
+            }
+            updateStats(stats[i], raptors[i]);
+        }
+
+        //calculates reward
+        uint prize = calcPrize(prizePool);
+
+        emit CompetitiveRaceWinner(places[0], prize, getOwner(places[0]));
+
+        return places[0];
+
+    }
 
     // //---------------------------------Comp--------------------------------//
     // //-------------------------------DR------------------------------------//
 
     // //DR Start
-    // function _deathRaceStart(uint16[] raptors, uint prizePool) internal returns(bool){
+    function _deathRaceStart(uint16[] raptors, uint prizePool) internal returns(bool){
+        emit DeathRaceStarted(raptors,prizePool);
 
-    // }
+        //get stats for each raptor
+        Stats[] memory stats = new Stats[](8);
+        for (uint8 i =0; i<8;i++){
+            stats[i] = getStats(raptors[i]);
+        }
+
+        //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
+        uint8[2] memory fighters = getFighters();
+        uint8 fightWinner = getFightWinner(fighters[0], fighters[1]);
+        uint8[2] memory indexesToIgnore = [fighters[0], fighters[1]];
+
+
+        //gets the winner & next two places
+        uint8[3] memory places = getWinner(stats,indexesToIgnore);
+
+        //modify states //index 0 = winner; index 1 = second; index 2 = third
+        stats[places[0]] = increaseDRWins(stats[places[0]]);
+        stats[places[0]] = upgradeSpeed(stats[places[0]]);
+        stats[places[1]] = increaseTop3RaceFinishes(stats[places[1]]);
+        stats[places[2]] = increaseTop3RaceFinishes(stats[places[2]]);
+
+        stats[fightWinner] = upgradeStrength(stats[fightWinner]);
+
+        if(fightWinner == fighters[0]){ 
+            _kill(raptors[fighters[1]]);
+            emit RipRaptor(raptors[fighters[1]]);
+        }else{
+            _kill(raptors[fighters[0]]);
+            emit RipRaptor(raptors[fighters[0]])
+        }
+
+        emit FightWinner(raptors[fightWinner]);        
+
+        //modify losses & update 
+        for(uint8 i =0; i<8; i++){
+            if(i != places[0]){
+                stats[i] = increaseDRLosses(stats[i]);
+            }
+            updateStats(stats[i], raptors[i]);
+        }
+
+        //calculates reward
+        uint prize = calcPrize(prizePool);
+
+        emit DeathRaceWinner(places[0], prize, getOwner(places[0]));
+
+        return places[0];
+    }
 
     // //DR Kill/BURN RAPTOR
-    // function _kill(uint16 raptor) internal returns (bool){
-    //     IERC721(_minter()).safeTransferFrom(ownerOf(raptor),address(0),raptor);
-    // }
+    function _kill(uint16 raptor) internal returns (bool){
+        IERC721(_minter()).safeTransferFrom(ownerOf(raptor),address(0),raptor);
+    }
 
     // //---------------------------------------DR----------------------------//
 
