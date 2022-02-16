@@ -35,11 +35,81 @@ library gameLib {
 
     //-------------------------Storage-------------------------------//
     //-------------------------Vars-------------------------------//
-    uint private distance;
-    address private minterContract;
-    address private payable communityWallet;
+    //use assembly slots for these
+
+    bytes32 constant distanceSlot = keccak256("Distnce");
+    // uint private distance;
+    
+    bytes32 constant minterContractSlot = keccak256("Minter");
+    // address private minterContract;
+
+    bytes32 constant communityWalletSlot = keccak256("Community");
+    // address private payable communityWallet;
+
     //-------------------------Vars-------------------------------//
+    //-------------------------Structs-------------------------------//
+    struct DistanceStore {
+        uint distance
+    }
+
+    struct MinterStore{
+        address minterContract
+    }
+
+    struct CommunityStore{
+        address communityWallet
+    }
+    //-------------------------Structs-------------------------------//
+    //-------------------------Slotter-------------------------------//
+    
+    // function vrfStorage() internal pure returns (VRF storage vrf){
+    //     bytes32 slot = vrfSlot;
+    //     assembly {
+    //         vrf.slot := slot
+    //     }
+    // }
+
+    function distanceStorage() internal pure returns (DistanceStore storage distanceStore){
+        bytes32 slot = distanceSlot;
+        assembly {
+            distanceStore.slot := slot
+        }
+    }
+
+    function minterStorage() internal pure returns (MinterStore storage minterStore){
+        bytes32 slot = minterContractSlot;
+        assembly{
+            minterStore.slot := slot
+        }
+    }
+
+    function communityStorage() internal pure returns(CommunityStore storage communityStore){
+        bytes32 slot = communityWalletSlot;
+        assembly{
+            communityStore.slot := slot
+        }
+    }
+
+    //-------------------------Slotter-------------------------------//
+    
+    //-------------------------Getters-------------------------------//
+
+    function _distance() internal view pure returns(uint){
+        return distanceStorage().distance;
+    }
+
+    function _minter() internal view pure returns (address) {
+        return minterStorage().minterContract;
+    }
+
+    function _community()internal view pure returns (address){
+        return communityStorage().communityWallet;
+    }
+
+    //-------------------------Getters-------------------------------//
+
     //-------------------------Setters-------------------------------//
+
     function SetMinter(address _minter) internal returns(bool){
         minterContract = _minter;
         return true;
@@ -55,21 +125,6 @@ library gameLib {
     }
 
     //-------------------------Setters-------------------------------//
-    //-------------------------Getters-------------------------------//
-
-    function _distance() internal view pure returns(uint){
-        return distance;
-    }
-
-    function _minter() internal view pure returns (address) {
-        return minterContract;
-    }
-
-    function _community()internal view pure returns (address){
-        return communityWallet;
-    }
-
-    //-------------------------Getters-------------------------------//
     //-------------------------Storage-------------------------------//
 
     //-------------------------Helpers-------------------------------//
