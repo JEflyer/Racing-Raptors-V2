@@ -111,17 +111,17 @@ library gameLib {
     //-------------------------Setters-------------------------------//
 
     function SetMinter(address _minter) internal returns(bool){
-        minterContract = _minter;
+        minterStorage().minterContract = _minter;
         return true;
     }
 
     function SetCommunityWallet(address _wallet) internal returns(bool){
-        communityWallet = payable(_wallet);
+        communityStorage().communityWallet = payable(_wallet);
         return true;
     }
 
     function SetDistance(uint _distance) internal returns(bool){
-        distance = _distance;
+        distanceStorage().distance = _distance;
     }
 
     //-------------------------Setters-------------------------------//
