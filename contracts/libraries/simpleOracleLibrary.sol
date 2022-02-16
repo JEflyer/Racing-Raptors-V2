@@ -1,14 +1,14 @@
 //SPDX-License-Identitifer: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/V0.8/VRFConsumerBase.sol";
-import "../linterfaces/LinkInterface.sol";
+import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/VRFConsumerBase.sol";
+import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
-library SimpleOracleLibrary is VRFConsumerBase {
+library SimpleOracleLibrary {
     
     bytes32 constant vrfSlot = keccak256("VRF");
     
-    uint256 private constant USER_SEED_PlACEHOLDER = 0;
+    uint256 private constant USER_SEED_PLACEHOLDER = 0;
     
     struct VRF {
         address vrfCoordinator;
@@ -18,6 +18,7 @@ library SimpleOracleLibrary is VRFConsumerBase {
         LinkTokenInterface LINK;
         uint256 randomResult;
         mapping(bytes32 => uint256) /* keyHash */ /* nonce */ nonces;
+        bytes32 lastRequestId;
     }
 
     function vrfStorage() internal pure returns (VRF storage vrf){
@@ -31,16 +32,18 @@ library SimpleOracleLibrary is VRFConsumerBase {
     function getRandomNumber() internal returns(uint256 rand) {
         VRF storage vrf = vrfStorage();
         require(vrf.LINK.balanceOf(address(this)) >= vrf.fee, "Not enough LINK balance");
-        rand = uint256(requestRAndomness(vrf.keyHash, vrf.fee));
+        rand = uint256(requestRandomness(vrf.keyHash, vrf.fee));
     }
 
     //make oracle request
-    function requestRandomness(bytes32 _keyHash, uint256 _fee) internal returns (bytes32 requestId) {
+    function requestRandomness(bytes32 _keyHash, uint256 _fee) internal returns (bytes32) {
         VRF storage vrf = vrfStorage();
         vrf.LINK.transferAndCall(vrf.vrfCoordinator, _fee,abi.encode(_keyHash, USER_SEED_PLACEHOLDER));        
         uint256 vRFSeed = makeVRFInputSeed(_keyHash, USER_SEED_PLACEHOLDER, address(this), vrf.nonces[_keyHash]);
         vrf.nonces[_keyHash] = vrf.nonces[_keyHash] +1;
-        return makeRequestId(_keyHash, vRFSeed);
+        bytes32 requestId = makeRequestId(_keyHash, vRFSeed);
+        vrf.lastRequestId = requestId;
+        return requestId;
     }
 
     //called in request randomness
@@ -72,15 +75,16 @@ library SimpleOracleLibrary is VRFConsumerBase {
 
     //-----------------------------------------Do Not Use These Functions In Your Contract----------------------
     //first function used in callback from VRF
-    function rawFulfillRandomness(bytes32 requestId, uint256 randomness) internal {
+    function rawFulfillRandomness(bytes32 requestId, uint256 randomness) external {
         VRF storage vrf = vrfStorage();
         require(msg.sender == vrf.vrfCoordinator, "Only VRFCoordinator can fulfill");
         fulfillRandomness(requestId, randomness);
     }
 
     //callback function used by VRF Coordinator
-    function fulfillRadomness(bytes32 requestId, uint256 randomness) internal {
+    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal {
         VRF storage vrf = vrfStorage();
+        require(requestId == vrf.lastRequestId);
         vrf.randomResult = randomness;
     }
 

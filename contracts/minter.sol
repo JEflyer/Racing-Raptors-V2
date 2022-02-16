@@ -12,8 +12,8 @@ import "./structs/stats.sol";
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/ontracts/token/ERC721/extensions/IERC721Metadata.sol";
-import "@openzeppelin/contracts/blob/master/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Context.sol";
 
 contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, Context {
 
@@ -48,11 +48,11 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
 
     address[] rewardedAddresses = [
         //holders of racing raptors v1 NFTs 
-    ]
+    ];
 
     uint8[] rewardedAmount = [
         //amounts held for each holder
-    ]
+    ];
 
     constructor(
         address _paymentSplitter,
@@ -171,7 +171,7 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
         }
     }
 
-    function walletOfOwner(address _wallet) public view pure returns(uint16[] memory ids){
+    function walletOfOwner(address _wallet) public view returns(uint16[] memory ids){
         uint16 ownerTokenCount = balanceOf(_wallet);
         ids = new uint16[](ownerTokenCount);
         for(uint16 i = 0; i< ownerTokenCount; i++){
@@ -179,7 +179,7 @@ contract Minter is IMinter, ERC721Enumerable, IERC721Receiver, IERC721Metadata, 
         }
     }
 
-    function getStats(uint16 _id) public view pure returns(Stats stats){
+    function getStats(uint16 _id) public view returns(Stats stats){
         require(_exists(_id), "This token does not exist");
         stats = raptorStats[_id];
     }

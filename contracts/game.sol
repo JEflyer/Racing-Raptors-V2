@@ -10,9 +10,9 @@ import "./structs/stats.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/blob/master/contracts/utils/Context.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Context.sol";
 
-contract Game is IGame, IERC721Receiver, Context, IERC721, Stats, gameLib, IMinter {
+contract Game is IERC721Receiver, Context{
 
     event NewAdmin(address admin);
     event UpdatedStats(uint16 raptor, Stats stats);
@@ -41,9 +41,12 @@ contract Game is IGame, IERC721Receiver, Context, IERC721, Stats, gameLib, IMint
         "QuickPlay",
         "Competitive",
         "DeathRace"
-    ]
+    ];
 
     CurrentRace public currentRace;
+
+    address payable private communityWallet;
+    uint16 private currentPosition;
 
     constructor(
         address _minterContract,
@@ -54,12 +57,13 @@ contract Game is IGame, IERC721Receiver, Context, IERC721, Stats, gameLib, IMint
     ){
         gameLib.SetMinter(_minterContract);
         admin = _msgSender();
-        gameLib.SetCommunityWallet(_communityWallet);
+        communityWallet = payable(_communityWallet);
         currentRace = CurrentRace(0);
         pot =0;
         QPFee = _QPFee;
         CompFee = _CompFee;
         DRFee = _DRFee;
+        currentPosition = 0;
     }
 
     
@@ -76,22 +80,27 @@ contract Game is IGame, IERC721Receiver, Context, IERC721, Stats, gameLib, IMint
         emit RaceChosen(raceNames[choice]);
     }
 
+    function _payOut(uint16 winner, uint payout,uint communityPayout) internal returns(bool){
+        payable(gameLib.getOwner(winner)).transfer(payout);
+        communityWallet.transfer(communityPayout);
+        return true;
+    }
     
 
     //Quickplay Entry
     function enterRaptorIntoQuickPlay(uint16 raptor) public payable returns (bool){
         //check that current race is enabled
-        require(currentRace == 1, "This race queue is not available at the moment");
+        require(uint(currentRace) == 1, "This race queue is not available at the moment");
 
 
         //check if there are spaces left
-        require(currentRaptors.length() <=8, "You can not join at this time");
+        require(currentRaptors.length <=8, "You can not join at this time");
 
         //check the raptor is owned by _msgSender()
         require(gameLib.owns(raptor), "You do not own this raptor");
 
         //check that raptor is not on cooldown
-        require(gameLib.getStats(raptor).cooldownTime < block.TimeStamp(), "Your raptor is not available right now");
+        require(gameLib.getStats(raptor).cooldownTime < block.timestamp, "Your raptor is not available right now");
 
         //check that msg.value is the entrance fee
         require(msg.value == QPFee, "You have not sent enough funds");
@@ -100,26 +109,31 @@ contract Game is IGame, IERC721Receiver, Context, IERC721, Stats, gameLib, IMint
         pot += msg.value;
 
         //add raptor to the queue
-        curentRaptors[currentPosition];
+        currentRaptors[currentPosition];
 
         //increment current Position
-        currentPosition = currentRaptors.length();
+        currentPosition = uint8(currentRaptors.length);
 
         //if 8 entrants then start race
-        if(currentRaptors == 8){
-            gameLib._quickPlayStart(currentRaptors, pot);
-            emit QuickPlayRaceStarted(currentRaptors, pot);
+        if(currentRaptors.length == 8){
+            uint16 winner = gameLib._quickPlayStart(currentRaptors, pot);
             currentPosition = 0;
+            uint fee = gameLib.calcFee(pot);
+            uint prize = gameLib.calcPrize(pot);
+            _payOut(winner, prize, fee);
         } 
     }
 
     //Competitive Entry
     function enterRaptorIntoComp(uint16 raptor) public payable returns (bool){
         //check that current race is enabled
-        require(currentRace == 2, "This race queue is not available at the moment");
+        require(uint(currentRace) == 2, "This race queue is not available at the moment");
 
         //check if there are spaces left
         require(currentRaptors.length <=8, "You can not join at this time");
+
+        //check that raptor is not on cooldown
+        require(gameLib.getStats(raptor).cooldownTime < block.timestamp, "Your raptor is not available right now");
 
         //check the raptor is owned by _msgSender()
         require(gameLib.owns(raptor), "You do not own this raptor");
@@ -131,26 +145,31 @@ contract Game is IGame, IERC721Receiver, Context, IERC721, Stats, gameLib, IMint
         pot += msg.value;
 
         //add raptor to the queue
-        curentRaptors[currentPosition];
+        currentRaptors[currentPosition];
 
         //increment current Position
-        currentPosition = currentRaptors.length()
+        currentPosition = uint16(currentRaptors.length);
 
         //if 8 entrants then start race
-        if(currentRaptors == 8){
-            gameLib._compStart(currentRaptors, pot);
-            emit CompetitiveRaceStarted(currentRaptors, pot);
+        if(currentRaptors.length == 8){
+            uint16 winner = gameLib._compStart(currentRaptors, pot);
             currentPosition = 0;
+            uint fee = gameLib.calcFee(pot);
+            uint prize = gameLib.calcPrize(pot);
+            _payOut(winner, prize, fee);
         } 
     }
 
     //DeathRace Entry
     function enterRaptorIntoDR(uint16 raptor) public payable returns(bool){
         //check that current race is enabled
-        require(currentRace == 3, "This race queue is not available at the moment");
+        require(uint(currentRace) == 3, "This race queue is not available at the moment");
 
         //check if there are spaces left
         require(currentRaptors.length <=8, "You can not join at this time");
+
+        //check that raptor is not on cooldown
+        require(gameLib.getStats(raptor).cooldownTime < block.timestamp, "Your raptor is not available right now");
 
         //check the raptor is owned by _msgSender()
         require(gameLib.owns(raptor), "You do not own this raptor");
@@ -162,16 +181,27 @@ contract Game is IGame, IERC721Receiver, Context, IERC721, Stats, gameLib, IMint
         pot += msg.value;
 
         //add raptor to the queue
-        curentRaptors[currentPosition];
+        currentRaptors[currentPosition];
 
         //increment current Position
-        currentPosition = currentRaptors.length()
+        currentPosition = currentRaptors.length;
 
         //if 8 entrants then start race
-        if(currentRaptors == 8){
-            gameLib._deathRaceStart(currentRaptors, pot);
-            emit DeathRaceStarted(currentRaptors, pot);
+        if(currentRaptors.length == 8){
+            uint16 winner = gameLib._deathRaceStart(currentRaptors, pot);
             currentPosition = 0;
+            uint fee = gameLib.calcFee(pot);
+            uint prize = gameLib.calcPrize(pot);
+            _payOut(winner, prize, fee);
         }  
+    }
+
+    function onERC721Received(
+        address operator, 
+        address from, 
+        uint256 tokenId, 
+        bytes calldata data) external override returns (bytes4) {
+        revert();
+        return IERC721Receiver.onERC721Received.selector;
     }
 }
