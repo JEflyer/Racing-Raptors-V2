@@ -153,7 +153,7 @@ contract Minter is ERC721Enumerable, IMinter {
 
         if(_msgSender() != admin){
             require(msg.value == getPrice(_amount),"Not enough funds sent");
-            if(minterLib.crossesThreshold(_amount)){ 
+            if(minterLib.crossesThreshold(_amount, totalMintSupply)){ 
                 price = minterLib.updatePrice(price);
                 emit PriceIncrease(price);
             } 
@@ -166,12 +166,12 @@ contract Minter is ERC721Enumerable, IMinter {
         require(success, "Sending funds to payment splitter failed");
 
         for(uint8 i =0; i< _amount; i++){
-            totalSupply += 1;
+            totalMintSupply += 1;
             _mint(_msgSender(), totalMintSupply);
-            raptorStats[totalMintSupply] = Stats(1,1,1,0,0,0,0,0,0,false);
+            raptorStats[totalMintSupply] = Stats(1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,false);
             _approve(gameAddress, totalMintSupply);
-            emit Mint(_msgSender, totalMintSupply);
-            if(totalSupply == totalLimit) {
+            emit Mint(_msgSender(), totalMintSupply);
+            if(totalMintSupply == totalLimit) {
                 emit SoldOut(soldOutMessage);
                 address winner = chooseWinner();
                 emit PorscheWinner(winner);
@@ -180,10 +180,10 @@ contract Minter is ERC721Enumerable, IMinter {
     }
 
     function walletOfOwner(address _wallet) public view override returns(uint16[] memory ids){
-        uint16 ownerTokenCount = balanceOf(_wallet);
+        uint16 ownerTokenCount = uint16(balanceOf(_wallet));
         ids = new uint16[](ownerTokenCount);
         for(uint16 i = 0; i< ownerTokenCount; i++){
-            ids[i] = tokenOfOwnerByIndex(_wallet, i);
+            ids[i] = uint16(tokenOfOwnerByIndex(_wallet, i));
         }
     }
 
@@ -200,12 +200,12 @@ contract Minter is ERC721Enumerable, IMinter {
     }
 
     function reward() internal {
-        for(uint8 i = 0; i < rewardedAddresses.length(); i++){
+        for(uint8 i = 0; i < rewardedAddresses.length; i++){
             for (uint8 j = 0; j < rewardedAmounts[i]; j++){
-                totalSupply +=1;
-                _mint(rewardedAddresses, totalSupply);
-                _approve(gameAddress, totalSupply);
-                raptorStats[totalSupply] = Stats(1,1,1,0,0,0,0,0,0,true);
+                totalMintSupply +=1;
+                _mint(rewardedAddresses[i], totalMintSupply);
+                _approve(gameAddress, totalMintSupply);
+                raptorStats[totalMintSupply] = Stats(1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,true);
             }
         }
     }

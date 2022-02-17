@@ -86,9 +86,12 @@ contract Game is IERC721Receiver, Context{
         return true;
     }
     
+    function getCurrentQueue() public view returns(uint16[] memory raptors){
+        return currentRaptors;
+    }
 
     //Quickplay Entry
-    function enterRaptorIntoQuickPlay(uint16 raptor) public payable returns (bool){
+    function enterRaptorIntoQuickPlay(uint16 raptor) public payable {
         //check that current race is enabled
         require(uint(currentRace) == 1, "This race queue is not available at the moment");
 
@@ -122,11 +125,12 @@ contract Game is IERC721Receiver, Context{
             uint prize = gameLib.calcPrize(pot);
             _payOut(winner, prize, fee);
             delete currentRace;
+            delete currentRaptors;
         } 
     }
 
     //Competitive Entry
-    function enterRaptorIntoComp(uint16 raptor) public payable returns (bool){
+    function enterRaptorIntoComp(uint16 raptor) public payable {
         //check that current race is enabled
         require(uint(currentRace) == 2, "This race queue is not available at the moment");
 
@@ -159,11 +163,12 @@ contract Game is IERC721Receiver, Context{
             uint prize = gameLib.calcPrize(pot);
             _payOut(winner, prize, fee);            
             delete currentRace;
+            delete currentRaptors;
         } 
     }
 
     //DeathRace Entry
-    function enterRaptorIntoDR(uint16 raptor) public payable returns(bool){
+    function enterRaptorIntoDR(uint16 raptor) public payable {
         //check that current race is enabled
         require(uint(currentRace) == 3, "This race queue is not available at the moment");
 
@@ -196,6 +201,7 @@ contract Game is IERC721Receiver, Context{
             uint prize = gameLib.calcPrize(pot);
             _payOut(winner, prize, fee);
             delete currentRace;
+            delete currentRaptors;
         }  
     }
 
@@ -203,7 +209,7 @@ contract Game is IERC721Receiver, Context{
         address operator, 
         address from, 
         uint256 tokenId, 
-        bytes calldata data) external override returns (bytes4) {
+        bytes calldata data) external pure override returns (bytes4) {
         revert();
         return IERC721Receiver.onERC721Received.selector;
     }

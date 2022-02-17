@@ -6,11 +6,11 @@ import "./simpleOracleLibrary.sol";
 
 library minterLib {
 
-    function updatePrice(uint _price)internal returns(uint price) {
+    function updatePrice(uint _price)internal pure returns(uint price) {
         price = _price << 1;
     }
 
-    function crossesThreshold(uint _amount, uint _totalSupply) internal view returns (bool answer){
+    function crossesThreshold(uint _amount, uint _totalSupply) internal pure returns (bool answer){
         uint remainder = (_totalSupply + _amount) % 1000;
         if(remainder >= 0 && remainder < 10) {
             answer = true;
@@ -19,11 +19,11 @@ library minterLib {
         }
     }
 
-    function getRandom(uint outOf) internal view returns(uint){
+    function getRandom(uint outOf) internal returns(uint){
         return (SimpleOracleLibrary.getRandomNumber() % outOf) + 1;
     }
 
-    function getAmounts(uint _amount, uint _totalSupply) internal view returns(uint8 amountBefore, uint8 amountAfter){
+    function getAmounts(uint _amount, uint _totalSupply) internal pure returns(uint8 amountBefore, uint8 amountAfter){
         for (uint i = 0; i < _amount; i++){
             if (crossesThreshold(i,_totalSupply)){
                 amountBefore = uint8(i +1);
