@@ -10,7 +10,7 @@ import "./structs/stats.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
 
 contract Game is IERC721Receiver, Context{
 
@@ -121,6 +121,7 @@ contract Game is IERC721Receiver, Context{
             uint fee = gameLib.calcFee(pot);
             uint prize = gameLib.calcPrize(pot);
             _payOut(winner, prize, fee);
+            delete currentRace;
         } 
     }
 
@@ -156,7 +157,8 @@ contract Game is IERC721Receiver, Context{
             currentPosition = 0;
             uint fee = gameLib.calcFee(pot);
             uint prize = gameLib.calcPrize(pot);
-            _payOut(winner, prize, fee);
+            _payOut(winner, prize, fee);            
+            delete currentRace;
         } 
     }
 
@@ -184,7 +186,7 @@ contract Game is IERC721Receiver, Context{
         currentRaptors[currentPosition];
 
         //increment current Position
-        currentPosition = currentRaptors.length;
+        currentPosition = uint16(currentRaptors.length);
 
         //if 8 entrants then start race
         if(currentRaptors.length == 8){
@@ -193,6 +195,7 @@ contract Game is IERC721Receiver, Context{
             uint fee = gameLib.calcFee(pot);
             uint prize = gameLib.calcPrize(pot);
             _payOut(winner, prize, fee);
+            delete currentRace;
         }  
     }
 

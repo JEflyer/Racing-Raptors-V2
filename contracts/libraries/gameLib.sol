@@ -252,6 +252,11 @@ library gameLib {
         return stats;
     }
 
+    function increaseDeathRaceLosses(Stats memory stats) internal pure returns(Stats memory){
+        stats.deathRacesLost += 1;
+        return stats;
+    }
+
     function increaseDeathRacesSurvived(Stats memory stats) internal pure returns(Stats memory){
         stats.deathRacesSurvived += 1;
         return stats;
@@ -320,7 +325,7 @@ library gameLib {
         //modify losses/survivals & update 
         for(uint8 i =0; i<8; i++){
             
-            if(i != fighters[0] || i != fighters[1] || i != raceWinner){
+            if(i != fighters[0] || i != fighters[1] || i != places[0]){
                 stats[i] = increaseDeathRacesSurvived(stats[i]);
             }
 
@@ -343,7 +348,7 @@ library gameLib {
     //----------------------------Comp-----------------------------------//
 
     // //Comp Start
-    function _compStart(uint16[] raptors, uint prizePool) internal returns(bool){
+    function _compStart(uint16[] memory raptors, uint prizePool) internal returns(uint16){
         emit CompetitiveRaceStarted(raptors,prizePool);
 
         //get stats for each raptor
@@ -392,9 +397,9 @@ library gameLib {
         //calculates reward
         uint prize = calcPrize(prizePool);
 
-        emit CompetitiveRaceWinner(places[0], prize, getOwner(places[0]));
+        emit CompetitiveRaceWinner(places[0], prize);
 
-        return places[0];
+        return raptors[places[0]];
 
     }
 
@@ -402,7 +407,7 @@ library gameLib {
     // //-------------------------------DR------------------------------------//
 
     // //DR Start
-    function _deathRaceStart(uint16[] raptors, uint prizePool) internal returns(bool){
+    function _deathRaceStart(uint16[] memory raptors, uint prizePool) internal returns(uint16){
         emit DeathRaceStarted(raptors,prizePool);
 
         //get stats for each raptor
@@ -421,7 +426,7 @@ library gameLib {
         uint8[3] memory places = getWinner(stats,indexesToIgnore);
 
         //modify states //index 0 = winner; index 1 = second; index 2 = third
-        stats[places[0]] = increaseDRWins(stats[places[0]]);
+        stats[places[0]] = increaseDeathRaceWins(stats[places[0]]);
         stats[places[0]] = upgradeSpeed(stats[places[0]]);
         stats[places[1]] = increaseTop3RaceFinishes(stats[places[1]]);
         stats[places[2]] = increaseTop3RaceFinishes(stats[places[2]]);
@@ -433,7 +438,7 @@ library gameLib {
             emit RipRaptor(raptors[fighters[1]]);
         }else{
             _kill(raptors[fighters[0]]);
-            emit RipRaptor(raptors[fighters[0]])
+            emit RipRaptor(raptors[fighters[0]]);
         }
 
         emit FightWinner(raptors[fightWinner]);        
@@ -441,7 +446,7 @@ library gameLib {
         //modify losses & update 
         for(uint8 i =0; i<8; i++){
             if(i != places[0]){
-                stats[i] = increaseDRLosses(stats[i]);
+                stats[i] = increaseDeathRaceLosses(stats[i]);
             }
             updateStats(stats[i], raptors[i]);
         }
@@ -449,14 +454,14 @@ library gameLib {
         //calculates reward
         uint prize = calcPrize(prizePool);
 
-        emit DeathRaceWinner(places[0], prize, getOwner(places[0]));
+        emit DeathRaceWinner(places[0], prize);
 
-        return places[0];
+        return raptors[places[0]];
     }
 
     // //DR Kill/BURN RAPTOR
     function _kill(uint16 raptor) internal returns (bool){
-        IERC721(_minter()).safeTransferFrom(ownerOf(raptor),address(0),raptor);
+        IERC721(_minter()).safeTransferFrom(getOwner(raptor),address(0),raptor);
     }
 
     // //---------------------------------------DR----------------------------//
