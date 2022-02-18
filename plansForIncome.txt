@@ -1,0 +1,53 @@
+total expected income from minting
+
+10000 mints 
+-30 mints for rewarding v1 holders
+9970 mints
+
+970 mints * 2 matic = 1,940 matic
+1000 * 4 = 4,000 matic
+1000 * 8 = 8,000 matic
+1000 * 16 = 16,000 matic  
+1000 * 32 = 32,000 matic
+1000 * 64 = 64,000 matic
+1000 * 128 = 128,000 matic
+1000 * 256 = 256,000 matic
+1000 * 512 = 512,000 matic
+1000 * 1024 = 1,024,000 matic
+
+total = 2,045,940 matic
+
+
+fund split 
+
+(35% for development, 15% for sweeping the floor)
+50% for development & sweeping the floor - 1,022,970 matic
+
+(10% for charities & 15% for giveaways) this is including the porsche
+25% for chaities & giveaways - 511,485 matic 
+
+25% to the dev - 511,485 matic
+
+0% For marketing because we're going to be so good that they can't ignore us.
+
+
+Stages of development
+V1 - basic mint
+V2 - more advanced mint with stats & a game contract, very basic game UI upgrading as minting progresses
+V3 - Even more advanced mint with V2 holders recieving a free V3 Mint, 3D Desktop & Mobile game for racing
+V4 - Integration with metaverses allowing animated raptors to be your pets/ be rideable, Raptor Fights released
+
+
+prize pool 
+
+95% of prize pool for each race is assigned to the winner
+5% of prize pool is put into a multi sig community committee wallet for buying NFTs from smaller projects & giving them away to our community
+
+
+Devs Personal Goals
+-Buy land
+-Develop 3D concrete printer
+-Develop vertical farm
+-Build a renewable enrgy farm
+-Work on computer vision assisted robotics for automation of farm
+-Provide housing & food for those in need for no charge

@@ -3,6 +3,7 @@ pragma solidity ^0.8.7;
 
 
 import "./simpleOracleLibrary.sol";
+import "hardhat/console.sol";
 
 library minterLib {
 
@@ -25,9 +26,10 @@ library minterLib {
 
     function getAmounts(uint _amount, uint _totalSupply) internal pure returns(uint8 amountBefore, uint8 amountAfter){
         for (uint i = 0; i < _amount; i++){
-            if (crossesThreshold(i,_totalSupply)){
+            if (crossesThreshold(i+1,_totalSupply)){
                 amountBefore = uint8(i +1);
                 amountAfter = uint8(_amount-amountBefore);
+                break;
             }
         }
     }

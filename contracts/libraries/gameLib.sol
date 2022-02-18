@@ -460,7 +460,7 @@ library gameLib {
     }
 
     // //DR Kill/BURN RAPTOR
-    function _kill(uint16 raptor) internal returns (bool){
+    function _kill(uint16 raptor) internal {
         IERC721(_minter()).safeTransferFrom(getOwner(raptor),address(0),raptor);
     }
 

@@ -3,6 +3,7 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+import "hardhat/console.sol";
 
 library SimpleOracleLibrary {
     
@@ -29,10 +30,12 @@ library SimpleOracleLibrary {
     }
 
     // Requests Randomness
-    function getRandomNumber() internal returns(uint256 rand) {
+    function getRandomNumber() internal returns(uint256) {
         VRF storage vrf = vrfStorage();
         require(vrf.LINK.balanceOf(address(this)) >= vrf.fee, "Not enough LINK balance");
-        rand = uint256(requestRandomness(vrf.keyHash, vrf.fee));
+        uint rand = uint256(requestRandomness(vrf.keyHash, vrf.fee));
+        console.log(string(abi.encodePacked("random num: ",rand)));
+        return rand;
     }
 
     //make oracle request

@@ -14,6 +14,8 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
+
+import "hardhat/console.sol";
 // took out the following libraries from inheritance : IERC721Receiver, IERC721Metadata,  Context,
 contract Minter is ERC721Enumerable, IMinter {
 
@@ -27,11 +29,11 @@ contract Minter is ERC721Enumerable, IMinter {
 
     address public admin;
     
-    bool private active;
+    bool public active;
     string private baseURI;
     string private CID;
-    string private extension = ".JSON";
-    string private notRevealed = "";
+    string private extension;
+    string private notRevealed;
 
     string private soldOutMessage;
 
@@ -43,7 +45,6 @@ contract Minter is ERC721Enumerable, IMinter {
 
     bool private revealed;
 
-    address payable private paymentSplitter;
     address private gameAddress;
 
     //commented out for testing
@@ -56,20 +57,23 @@ contract Minter is ERC721Enumerable, IMinter {
 
     uint8[] rewardedAmounts = [
         //amounts held for each holder
-        1,2,3
+        1,2,2
     ];
 
+    address[] public paymentsTo;
+
     constructor(
-        address _paymentSplitter,
         string memory _baseURI,
         string memory _CID,
         string memory _notRevealed,
         string memory _extension,
         uint16 _totalLimit,
         string memory _soldOutMessage,
-        address[] memory _rewardedAddresses
+        address[] memory _rewardedAddresses,
+        address[] memory _paymentsTo
         )ERC721("Racing Raptors V2", "RR"){
-            require(_rewardedAddresses.length ==3);
+            require(_rewardedAddresses.length ==3);//just here for testing, the addresses and amounts will be hardcoded into the main contract
+            require(_paymentsTo.length == 3);
             rewardedAddresses = _rewardedAddresses;
             baseURI = _baseURI;
             CID = _CID;
@@ -80,7 +84,7 @@ contract Minter is ERC721Enumerable, IMinter {
             totalLimit = _totalLimit;
             price = 2 * 10**18;
             admin = _msgSender();
-            paymentSplitter = payable(_paymentSplitter);
+            paymentsTo = _paymentsTo;
             soldOutMessage = _soldOutMessage;
             reward();
     }
@@ -90,14 +94,17 @@ contract Minter is ERC721Enumerable, IMinter {
         emit NewGameContract(_gameAddress);
     }
 
-    function updateSplitter(address _paymentSplitter) public onlyAdmin {
-        paymentSplitter = payable(_paymentSplitter);
+    function updatePaymentTo(address _paymentTo, uint8 index) public onlyAdmin {
+        paymentsTo[index] = _paymentTo;
     }
 
     function getPrice(uint8 _amount) public view override returns(uint256 givenPrice){
         require(_amount <= 10, "Too high of an amount");
-        if(minterLib.crossesThreshold(_amount,totalMintSupply) == true){
+        bool answer = minterLib.crossesThreshold(_amount,totalMintSupply);
+        if(answer == true){
             (uint8 amountBefore, uint8 amountAfter) = minterLib.getAmounts(_amount,totalMintSupply);
+            console.log(amountBefore);
+            console.log(amountAfter);
             givenPrice = (price*amountBefore) + (price * 2 * amountAfter);
         } else {
             givenPrice = price * _amount;
@@ -109,12 +116,12 @@ contract Minter is ERC721Enumerable, IMinter {
     }
 
     modifier onlyAdmin{
-        require(_msgSender() == admin);
+        require(_msgSender() == admin, "Only A");
         _;
     }
 
     modifier onlyGameAddress{
-        require(_msgSender() == gameAddress, "Only the game contract can call this function");
+        require(_msgSender() == gameAddress, "only GC");
         _;
     }
 
@@ -147,6 +154,18 @@ contract Minter is ERC721Enumerable, IMinter {
         return ownerOf(tokenId);
     }
 
+    //split & send funds
+    function splitFunds(uint256 fundsToSplit) public payable {
+        require(fundsToSplit >= address(this).balance, "Contract balance is insufficient");
+        require(payable(paymentsTo[0]).send(fundsToSplit * 25/100));//for dev
+        require(payable(paymentsTo[1]).send(fundsToSplit * 50/100));//for development& floor sweeping
+        require(payable(paymentsTo[2]).send(fundsToSplit * 25/100));//for charity & giveaways
+    }
+
+
+    receive() external payable {
+        splitFunds(msg.value);
+    }
 
     function mint(uint8 _amount) public payable {
         require(active, "This function is not available right now");
@@ -157,13 +176,11 @@ contract Minter is ERC721Enumerable, IMinter {
                 price = minterLib.updatePrice(price);
                 emit PriceIncrease(price);
             } 
+            splitFunds(msg.value);
         }
-
+        
         require(_amount <= 10, "You are trying to mint too many");
         require(totalMintSupply + _amount <= totalLimit, "You can not mint more than the limit");
-
-        (bool success,) = paymentSplitter.call{value: msg.value}("");
-        require(success, "Sending funds to payment splitter failed");
 
         for(uint8 i =0; i< _amount; i++){
             totalMintSupply += 1;

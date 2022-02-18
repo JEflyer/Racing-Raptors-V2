@@ -117,8 +117,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\libraries\\gameLib.sol": {
-      "lastModificationDate": 1645058998227,
-      "contentHash": "08b4197c48ab5fe1cb64eb5e25573432",
+      "lastModificationDate": 1645136581898,
+      "contentHash": "9bdbdecae35dea2fb6a9b3a69b2ca527",
       "sourceName": "contracts/libraries/gameLib.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -297,8 +297,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\libraries\\simpleOracleLibrary.sol": {
-      "lastModificationDate": 1645053040433,
-      "contentHash": "f9d516013e7ede99bd6e439ae06bb38e",
+      "lastModificationDate": 1645135961840,
+      "contentHash": "84ec2e9cbaa5d8845cc3ce0fc263be1b",
       "sourceName": "contracts/libraries/simpleOracleLibrary.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -325,7 +325,8 @@
       },
       "imports": [
         "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol",
-        "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol"
+        "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol",
+        "hardhat/console.sol"
       ],
       "versionPragmas": [
         "^0.8.7"
@@ -740,8 +741,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\minter.sol": {
-      "lastModificationDate": 1645118878358,
-      "contentHash": "1ebb5a6a52b7f809b87354c116790f3d",
+      "lastModificationDate": 1645144340258,
+      "contentHash": "fbfabdbececdd0c2056f962c69e0c2a8",
       "sourceName": "contracts/minter.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -774,7 +775,8 @@
         "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol",
         "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol",
         "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
-        "@openzeppelin/contracts/utils/Context.sol"
+        "@openzeppelin/contracts/utils/Context.sol",
+        "hardhat/console.sol"
       ],
       "versionPragmas": [
         "^0.8.7"
@@ -784,8 +786,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\libraries\\minterLib.sol": {
-      "lastModificationDate": 1645118948830,
-      "contentHash": "eca8bd2077eba4da8146070be1fab97a",
+      "lastModificationDate": 1645143099511,
+      "contentHash": "98668f61181e48289ed26528af238025",
       "sourceName": "contracts/libraries/minterLib.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -811,7 +813,8 @@
         }
       },
       "imports": [
-        "./simpleOracleLibrary.sol"
+        "./simpleOracleLibrary.sol",
+        "hardhat/console.sol"
       ],
       "versionPragmas": [
         "^0.8.7"
@@ -890,6 +893,41 @@
       ],
       "artifacts": [
         "LinkTokenInterface"
+      ]
+    },
+    "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\node_modules\\hardhat\\console.sol": {
+      "lastModificationDate": 1644566833465,
+      "contentHash": "cc4777addd464ea56fa35b1c45df0591",
+      "sourceName": "hardhat/console.sol",
+      "solcConfig": {
+        "version": "0.8.7",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.22 <0.9.0"
+      ],
+      "artifacts": [
+        "console"
       ]
     }
   }
