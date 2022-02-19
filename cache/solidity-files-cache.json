@@ -741,8 +741,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\minter.sol": {
-      "lastModificationDate": 1645144340258,
-      "contentHash": "fbfabdbececdd0c2056f962c69e0c2a8",
+      "lastModificationDate": 1645234723934,
+      "contentHash": "3930ee0cb20b4d996ba39af7edaaf4f0",
       "sourceName": "contracts/minter.sol",
       "solcConfig": {
         "version": "0.8.7",

@@ -103,8 +103,6 @@ contract Minter is ERC721Enumerable, IMinter {
         bool answer = minterLib.crossesThreshold(_amount,totalMintSupply);
         if(answer == true){
             (uint8 amountBefore, uint8 amountAfter) = minterLib.getAmounts(_amount,totalMintSupply);
-            console.log(amountBefore);
-            console.log(amountAfter);
             givenPrice = (price*amountBefore) + (price * 2 * amountAfter);
         } else {
             givenPrice = price * _amount;
