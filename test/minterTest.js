@@ -21,6 +21,25 @@ let owner,  addr1, addr2, addr3, addr4, addr5, addr6, addr7, addr8, addr9;
 let pay1, pay2, pay3;
 let provider;
 
+let newStats = {
+    speed: 2,
+    strength:1,
+    agressiveness:1,
+    fightsWon:0,
+    fightsLost:0,
+    quickPlayRacesWon:1,
+    quickPlayRacesLost:2,
+    compRacesWon:2,
+    compRacesLost:1,
+    deathRacesWon:0,
+    deathRacesLost:0,
+    deathRacesSurvived:0,
+    deathRaceFightsWon:0,
+    totalRacesTop3Finish:0,
+    cooldownTime:0,
+    foundingRaptor:true,
+}
+
 
 describe("Testing Minter Contract", () => {
     beforeEach(async () => {
@@ -59,7 +78,7 @@ describe("Testing Minter Contract", () => {
             DRFee
         );
     })
-    //--------------------------WORKING-------------------------------//
+    //--------------------------COMPLETELY-WORKING-------------------------------//
     // it("Should allow the setting of the game contract", async() => {
     //     await minter.connect(owner).updateGameAddress(game.address);
     //     expect(await minter.gameAddress()).to.be.equal(game.address);
@@ -141,34 +160,37 @@ describe("Testing Minter Contract", () => {
     //     console.log("owner ",endingBalance);
     //     expect(endingBalance-startingBalance).to.be.equal(0.5);
     // })
-    //--------------------------WORKING-------------------------------//
-    // it("Should split the funds correctly if someone mints", async() => {
-        
+    // it("Should set stats correctly on mint", async() => {//not 100% sure how to test this one but the stats log correctly
+    //     await minter.connect(addr1).mint(1,{value: ethers.utils.parseEther("2")});
+    //     console.log(await minter.connect(addr1).getStats(6));
     // })
-    // it("Should mint correctly", async() => {
-        
-    // })
-    // it("Should set stats correctly on mint", async() => {
-        
-    // })
+    
     // it("Should return the correct tokens owned by a wallet", async() => {
-        
+    //     await minter.connect(addr1).mint(1, {value: ethers.utils.parseEther("2")});
+    //     let tokenIDs = await minter.connect(addr1).walletOfOwner(addr1.address);
+    //     expect(tokenIDs[0]).to.be.equal(6);
     // })
+    
     // it("Should not allow the admin to update stats", async() => {
-        
+        // await minter.connect(owner).mint(1);
+        // expect(minter.connect(owner).updateStats(newStats, 6)).to.be.revertedWith("only GC");
     // })
+    
     // it("Should not allow a different wallet to update the stats", async() => {
-        
+    //     await minter.connect(addr1).mint(1, {value: ethers.utils.parseEther("2")});
+    //     expect(minter.connect(addr1).updateStats(newStats, 6)).to.be.revertedWith("only GC");
     // })
+    
     // it("Should reward V1 holders correctly", async() => {
-        
+    //     let tokenId = await minter.connect(addr7).walletOfOwner(addr7.address);
+    //     expect(tokenId[0]).to.be.equal(1)
     // })
-    // it("Should update the price correctly", async() => {
-        
+    
+    // it("Should give the correct price from getPrice", async() => {
+    //     let price = await minter.getPrice(2);
+    //     expect(price).to.be.equal(ethers.utils.parseEther("4"));
     // })
-    // it("Should give the correct price from getPrice when crossing threshold", async() => {
-        
-    // })
+    //--------------------------COMPLETELY-WORKING-------------------------------//
 })
 
 

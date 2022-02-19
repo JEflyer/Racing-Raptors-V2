@@ -11,12 +11,13 @@ library minterLib {
         price = _price << 1;
     }
 
-    function crossesThreshold(uint _amount, uint _totalSupply) internal pure returns (bool answer){
+    function crossesThreshold(uint _amount, uint _totalSupply) internal pure returns (bool){
+        if(_totalSupply+_amount < 1000) return false;
         uint remainder = (_totalSupply + _amount) % 1000;
         if(remainder >= 0 && remainder < 10) {
-            answer = true;
+            return true;
         } else {
-            answer = false;
+            return false;
         }
     }
 
