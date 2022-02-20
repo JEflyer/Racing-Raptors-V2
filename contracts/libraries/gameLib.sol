@@ -42,7 +42,7 @@ library gameLib {
     
     bytes32 constant minterContractSlot = keccak256("Minter");
 
-    bytes64 private constant rngSlot = keccak256("RNG");
+    bytes32 private constant rngSlot = keccak256("RNG");
     
     //-------------------------Vars-------------------------------//
     //-------------------------Structs-------------------------------//
@@ -83,7 +83,7 @@ library gameLib {
     }
 
     function rngStorage() internal pure returns (RNG storage rng){
-        bytes64 slot = rngSlot;
+        bytes32 slot = rngSlot;
         assembly{
             RNG.slot := rngSlot
         }

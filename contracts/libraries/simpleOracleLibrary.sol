@@ -50,7 +50,7 @@ library SimpleOracleLibrary {
     //------------------------------------------Helper Function----------------------------------------------
     //get random number
     function getNumber() internal returns (uint){
-        VRF storage crf = vrfStorage();
+        VRF storage vrf = vrfStorage();
         return vrf.randomResult;
     }
 
