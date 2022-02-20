@@ -37,15 +37,13 @@ library gameLib {
     //-------------------------Vars-------------------------------//
     //use assembly slots for these
 
-    bytes32 constant distanceSlot = keccak256("Distnce");
+    bytes32 private constant distanceSlot = keccak256("Distnce");
     // uint private distance;
     
     bytes32 constant minterContractSlot = keccak256("Minter");
-    // address private minterContract;
 
-    bytes32 constant communityWalletSlot = keccak256("Community");
-    // address private payable communityWallet;
-
+    bytes64 private constant rngSlot = keccak256("RNG");
+    
     //-------------------------Vars-------------------------------//
     //-------------------------Structs-------------------------------//
     struct DistanceStore {
@@ -54,6 +52,17 @@ library gameLib {
 
     struct MinterStore{
         address minterContract;
+    }
+
+    struct RNG{
+        uint64 rng0;
+        uint64 rng1;
+        uint64 rng2;
+        uint64 rng3;
+        uint64 rng4;
+        uint64 rng5;
+        uint64 rng6;
+        uint64 rng7;
     }
 
     //-------------------------Structs-------------------------------//
@@ -73,6 +82,13 @@ library gameLib {
         }
     }
 
+    function rngStorage() internal pure returns (RNG storage rng){
+        bytes64 slot = rngSlot;
+        assembly{
+            RNG.slot := rngSlot
+        }
+    }
+
     //-------------------------Slotter-------------------------------//
     
     //-------------------------Getters-------------------------------//
@@ -84,6 +100,47 @@ library gameLib {
     function _minter() internal view returns (address) {
         return minterStorage().minterContract;
     }
+
+    function getRNG0() internal view returns (uint64){
+        RNG storage rng = rngStorage();
+        return rng.rng0;
+    }
+
+    function getRNG1() internal view returns (uint64){
+        RNG storage rng = rngStorage();
+        return rng.rng1;
+    }
+
+    function getRNG2() internal view returns (uint64){
+        RNG storage rng = rngStorage();
+        return rng.rng2;
+    }
+
+    function getRNG3() internal view returns (uint64){
+        RNG storage rng = rngStorage();
+        return rng.rng3;
+    }
+
+    function getRNG4() internal view returns (uint64){
+        RNG storage rng = rngStorage();
+        return rng.rng4;
+    }
+
+    function getRNG5() internal view returns (uint64){
+        RNG storage rng = rngStorage();
+        return rng.rng5;
+    }
+
+    //Not Used
+    // function getRNG6() internal view returns (uint64){
+    //     RNG storage rng = rngStorage();
+    //     return rng.rng6;
+    // }
+
+    // function getRNG7() internal view returns (uint64){
+    //     RNG storage rng = rngStorage();
+    //     return rng.rng7;
+    // }
 
     //-------------------------Getters-------------------------------//
 
@@ -97,6 +154,20 @@ library gameLib {
     function SetDistance(uint distance) internal returns(bool){
         distanceStorage().distance = distance;
         return true;
+    }
+
+    function updateRNG() internal {
+        RNG storage rng = rngStorage();
+        uint64[] values = new uint64[](8);
+        values = SimpleOracleLibrary.expand();
+        rng.rng0  = values[0];
+        rng.rng1  = values[1];
+        rng.rng2  = values[2];
+        rng.rng3  = values[3];
+        rng.rng4  = values[4];
+        rng.rng5  = values[5];
+        rng.rng6  = values[6];
+        rng.rng7  = values[7];
     }
 
     //-------------------------Setters-------------------------------//
@@ -131,8 +202,8 @@ library gameLib {
         prize = (pool / 100) * 95;
     }
 
-    function getRandom(uint outOf) internal returns(uint){
-        return (SimpleOracleLibrary.getRandomNumber() % outOf) + 1;
+    function getRandom() internal{
+        SimpleOracleLibrary.getRandomNumber();
     }
 
     function checkBounds(uint8 input) internal pure returns(bool response){
@@ -140,19 +211,17 @@ library gameLib {
     }
 
     function getFighters() internal returns(uint8[2] memory fighters){
-        uint8 rand = uint8(getRandom(147));
-        while((rand % 40) == 0 || rand < 8){
-            rand = uint8(getRandom(167));
-        }
-        uint8 raptor1 = (rand % 5);
-        uint8 raptor2 = (rand % 8);
+        uint64 rand = getRNG0();
+        
+        uint8 raptor1 = uint8(rand % 5);
+        uint8 raptor2 = uint8(rand % 8);
 
         if(raptor1 == raptor2){
-            raptor1 += rand % 3;
+            raptor1 += uint8(rand % 3);
         }
         bool check = checkBounds(raptor1);
         if(!check) {
-            raptor1 =0 + (rand % 3);
+            raptor1 =0 + uint8(rand % 3);
         } 
         fighters[0] = raptor1;
         fighters[1] = raptor2;
@@ -160,7 +229,7 @@ library gameLib {
 
     //agressiveness & strength not currently factors on who wins the fight
     function getFightWinner(uint8 raptor1, uint8 raptor2) internal returns(uint8 index){
-        (getRandom(2) == 0) ? index = raptor1 : index = raptor2; 
+        (getRNG1()%2 == 0) ? index = raptor1 : index = raptor2; 
     }
 
     function getFastest(uint[8] memory time, uint8[2] memory indexesToIgnore) internal pure returns (uint8[3] memory places){
@@ -185,8 +254,8 @@ library gameLib {
     function getWinner(Stats[] memory stats, uint8[2] memory indexesToIgnore) internal returns(uint8[3] memory places){
         //get randomness for each raptor
         uint8[] memory randomness = new uint8[](8);
-        for(uint i =0; i< 8; i++){
-            randomness[i] = uint8(getRandom(5));
+        for(uint8 i =0; i< 8; i++){
+            randomness[i] = uint8(getRNG2()%5);
         }
 
         //calc times to finish the race first with added randomness
@@ -204,19 +273,19 @@ library gameLib {
     //------------------------Stat-Changes------------------------------//
                        // -------  +vary ----------//
     function upgradeAggressiveness(Stats memory stats) internal returns(Stats memory){
-        uint8 rand = uint8(getRandom(592) %3) +1;
+        uint8 rand = uint8(getRNG3() %3) +1;
         stats.agressiveness += rand;
         return stats;
     }
 
     function upgradeStrength(Stats memory stats) internal returns(Stats memory){
-        uint8 rand = uint8(getRandom(768) %3) +1;
+        uint8 rand = uint8(getRNG4() %3) +1;
         stats.strength += rand;
         return stats;
     }
 
     function upgradeSpeed(Stats memory stats) internal returns(Stats memory){
-        uint8 rand = uint8(getRandom(523) %3) +1;
+        uint8 rand = uint8(getRNG5() %3) +1;
         stats.speed += rand;
         return stats;
     }

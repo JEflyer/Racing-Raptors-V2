@@ -41,43 +41,43 @@ let newStats = {
 }
 
 
-describe("Testing Minter Contract", () => {
-    beforeEach(async () => {
-        provider = ethers.provider;
-        [owner, addr1, addr2, addr3, addr4, addr5, addr6, addr7, addr8, addr9] = await ethers.getSigners();
+// describe("Testing Minter Contract", () => {
+//     beforeEach(async () => {
+//         provider = ethers.provider;
+//         [owner, addr1, addr2, addr3, addr4, addr5, addr6, addr7, addr8, addr9] = await ethers.getSigners();
     
-        const Minter = await ethers.getContractFactory("Minter");
-        const Game = await ethers.getContractFactory("Game");
+//         const Minter = await ethers.getContractFactory("Minter");
+//         const Game = await ethers.getContractFactory("Game");
     
-        //for minter constructor
-        const rewardedAddresses = [addr7.address, addr8.address, addr9.address];
-        const paymentsTo = [owner.address, addr1.address, addr2.address];
+//         //for minter constructor
+//         const rewardedAddresses = [addr7.address, addr8.address, addr9.address];
+//         const paymentsTo = [owner.address, addr1.address, addr2.address];
         
-        minter = await Minter.deploy(
-            baseUri,
-            CID,
-            NotRevealed,
-            extension,
-            totalLimit,
-            soldOutMessage,
-            rewardedAddresses,
-            paymentsTo
-        );
+//         minter = await Minter.deploy(
+//             baseUri,
+//             CID,
+//             NotRevealed,
+//             extension,
+//             totalLimit,
+//             soldOutMessage,
+//             rewardedAddresses,
+//             paymentsTo
+//         );
         
         
-        //for game constructor
-        const communityWallet = addr6.address;
-        const minterAddress = minter.address;
+//         //for game constructor
+//         const communityWallet = addr6.address;
+//         const minterAddress = minter.address;
         
     
-        game = await Game.deploy(
-            minterAddress,
-            communityWallet,
-            QPFee,
-            CompFee,
-            DRFee
-        );
-    })
+//         game = await Game.deploy(
+//             minterAddress,
+//             communityWallet,
+//             QPFee,
+//             CompFee,
+//             DRFee
+//         );
+//     })
     //--------------------------COMPLETELY-WORKING-------------------------------//
     // it("Should allow the setting of the game contract", async() => {
     //     await minter.connect(owner).updateGameAddress(game.address);
@@ -191,7 +191,7 @@ describe("Testing Minter Contract", () => {
     //     expect(price).to.be.equal(ethers.utils.parseEther("4"));
     // })
     //--------------------------COMPLETELY-WORKING-------------------------------//
-})
+// })
 
 
 // describe("Testing Game Contract", () => {

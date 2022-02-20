@@ -64,9 +64,7 @@ contract Game is IERC721Receiver, Context{
         CompFee = _CompFee;
         DRFee = _DRFee;
         currentPosition = 0;
-    }
-
-    
+    }    
 
     modifier onlyAdmin {
         require(msg.sender == admin, "You can not call this function");
@@ -78,6 +76,7 @@ contract Game is IERC721Receiver, Context{
         require(choice >= 0 && choice <=3);
         currentRace = CurrentRace(choice);
         emit RaceChosen(raceNames[choice]);
+        gameLib.getRandom();
     }
 
     function _payOut(uint16 winner, uint payout,uint communityPayout) internal returns(bool){

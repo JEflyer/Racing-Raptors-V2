@@ -21,8 +21,12 @@ library minterLib {
         }
     }
 
-    function getRandom(uint outOf) internal returns(uint){
-        return (SimpleOracleLibrary.getRandomNumber() % outOf) + 1;
+    function getRandom() internal {
+        SimpleOracleLibrary.getRandomNumber();
+    }
+    
+    function retrieveRandom() internal returns(uint){
+        return SimpleOracleLibrary.getNumber();
     }
 
     function getAmounts(uint _amount, uint _totalSupply) internal pure returns(uint8 amountBefore, uint8 amountAfter){

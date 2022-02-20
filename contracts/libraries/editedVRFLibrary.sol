@@ -7,20 +7,11 @@ import "hardhat/console.sol";
 
 library SimpleOracleLibrary {
     
-    bytes32 private constant vrfSlot = keccak256("VRF");
+    bytes32 constant vrfSlot = keccak256("VRF");
     
     uint256 private constant USER_SEED_PLACEHOLDER = 0;
 
-    uint64[] constant primes = [
-        6619,
-        6719,
-        7309,
-        7393,
-        7853,
-        7919,
-        7727,
-        3167
-    ];
+    bytes64 constant rngSlot = keccak256("Rand");
     
     struct VRF {
         address vrfCoordinator;
@@ -33,6 +24,17 @@ library SimpleOracleLibrary {
         bytes32 lastRequestId;
     }
 
+    struct RNG{
+        uint64 rng0;
+        uint64 rng1;
+        uint64 rng2;
+        uint64 rng3;
+        uint64 rng4;
+        uint64 rng5;
+        uint64 rng6;
+        uint64 rng7;
+    }
+
     function vrfStorage() internal pure returns (VRF storage vrf){
         bytes32 slot = vrfSlot;
         assembly {
@@ -40,46 +42,31 @@ library SimpleOracleLibrary {
         }
     }
 
+    function rngStorage() internal pure returns(RNG storage rng){
+        bytes64 slot = rngSlot;
+        assembly{
+            rng.slot := slot
+        }
+    }
+
     // Requests Randomness
-    function getRandomNumber() internal {
+    function getRandomNumber() internal returns(uint256) {
         VRF storage vrf = vrfStorage();
         require(vrf.LINK.balanceOf(address(this)) >= vrf.fee, "Not enough LINK balance");
-        requestRandomness(vrf.keyHash, vrf.fee);
-    }
-    
-    //------------------------------------------Helper Function----------------------------------------------
-    //get random number
-    function getNumber() internal returns (uint){
-        VRF storage crf = vrfStorage();
-        return vrf.randomResult;
+        uint rand = uint256(requestRandomness(vrf.keyHash, vrf.fee));
+        console.log(string(abi.encodePacked("random num: ",rand)));
+        return rand;
     }
 
-
-
-    //generate 8 random values from random value
-    function expand() internal pure returns(uint64[8] memory expandedValues){
-        expandedValues = new uint64[](8);
-        uint256 randomValue = getNumber();
-        for(uint256 i = 0; i<8 ; i++){
-            expandedValues[i] = uint64(uint256(keccak256(abi.encode(randomValue,i))) % primes[i]);
-        }
-        return expandedValues;
-    }
-    //------------------------------------------Helper Function----------------------------------------------
-
-    //-----------------------------------------Do Not Use These Functions In Your Contract----------------------
-    //first function used in callback from VRF
-    function rawFulfillRandomness(bytes32 requestId, uint256 randomness) external {
+    //make oracle request
+    function requestRandomness(bytes32 _keyHash, uint256 _fee) internal returns (bytes32) {
         VRF storage vrf = vrfStorage();
-        require(msg.sender == vrf.vrfCoordinator, "Only VRFCoordinator can fulfill");
-        fulfillRandomness(requestId, randomness);
-    }
-
-    //callback function used by VRF Coordinator
-    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal {
-        VRF storage vrf = vrfStorage();
-        require(requestId == vrf.lastRequestId);
-        vrf.randomResult = randomness;
+        vrf.LINK.transferAndCall(vrf.vrfCoordinator, _fee,abi.encode(_keyHash, USER_SEED_PLACEHOLDER));        
+        uint256 vRFSeed = makeVRFInputSeed(_keyHash, USER_SEED_PLACEHOLDER, address(this), vrf.nonces[_keyHash]);
+        vrf.nonces[_keyHash] = vrf.nonces[_keyHash] +1;
+        bytes32 requestId = makeRequestId(_keyHash, vRFSeed);
+        vrf.lastRequestId = requestId;
+        return requestId;
     }
 
     //called in request randomness
@@ -97,16 +84,33 @@ library SimpleOracleLibrary {
         return keccak256(abi.encodePacked(_keyHash, _vRFInputSeed));
     }
 
-    //make oracle request
-    function requestRandomness(bytes32 _keyHash, uint256 _fee) internal {
-        VRF storage vrf = vrfStorage();
-        vrf.LINK.transferAndCall(vrf.vrfCoordinator, _fee,abi.encode(_keyHash, USER_SEED_PLACEHOLDER));        
-        uint256 vRFSeed = makeVRFInputSeed(_keyHash, USER_SEED_PLACEHOLDER, address(this), vrf.nonces[_keyHash]);
-        vrf.nonces[_keyHash] = vrf.nonces[_keyHash] +1;
-        bytes32 requestId = makeRequestId(_keyHash, vRFSeed);
-        vrf.lastRequestId = requestId;
+    
+    //Helper Function
+    //generate multiple random values from 1 random value
+    function expand(uint256 randomValue, uint256 n) internal pure returns(uint256[] memory expandedValues){
+        expandedValues = new uint256[](n);
+        for(uint256 i = 0; i<n ; i++){
+            expandedValues[i] = uint256(keccak256(abi.encode(randomValue,i)));
+        }
+        return expandedValues;
     }
+
+
     //-----------------------------------------Do Not Use These Functions In Your Contract----------------------
+    //first function used in callback from VRF
+    function rawFulfillRandomness(bytes32 requestId, uint256 randomness) external {
+        VRF storage vrf = vrfStorage();
+        require(msg.sender == vrf.vrfCoordinator, "Only VRFCoordinator can fulfill");
+        fulfillRandomness(requestId, randomness);
+    }
+
+    //callback function used by VRF Coordinator
+    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal {
+        VRF storage vrf = vrfStorage();
+        require(requestId == vrf.lastRequestId);
+        vrf.randomResult = randomness;
+    }
+
 
 
     // /**

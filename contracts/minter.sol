@@ -144,9 +144,12 @@ contract Minter is ERC721Enumerable, IMinter {
 
     }
 
+    function getRng() public onlyAdmin {
+        minterLib.getRandom();
+    }
+
     function chooseWinner() internal returns(address) {
-        //use chainink to get random number between 1 & 10000
-        uint16 tokenId = uint16(minterLib.getRandom(10000));
+        uint16 tokenId = uint16(minterLib.retrieveRandom()%10000);
 
         //find owner 
         return ownerOf(tokenId);
