@@ -65,90 +65,90 @@ library gameLib {
         (input < n && input >= 0) ? response = true : response = false;
     }
 
-    function getFighters(uint64[2] memory rng, uint8 n) internal returns(uint8[2] memory fighters){
-        require(rng.length == 2);
+    function getFighters(GameVars memory gameVars) internal returns(GameVars memory){
+        require(gameVars.expandedNums.length == 2);
         
-        uint8 raptor1 = uint8(rng[0] % n);
-        uint8 raptor2 = uint8(rng[1] % 8);
+        gameVars.fighters[0] = uint8(gameVars.expandedNums[0] % 8);
+        gameVars.fighters[1] = uint8(gameVars.expandedNums[1] % 8);
 
-        while(raptor1 == raptor2){
-            bool check = checkBounds(raptor1,n);
+        while(gameVars.fighters[0] == gameVars.fighters[1]){
+            bool check = checkBounds(gameVars.fighters[0],gameVars.n);
             if(!check) {
-                raptor1 =0 + uint8(rng[1] % 7);
+                gameVars.fighters[0] =0 + uint8(gameVars.expandedNums[3] % 7);
             } 
         }
 
-        fighters[0] = raptor1;
-        fighters[1] = raptor2;
+        return gameVars;
+
     }
 
     //agressiveness & strength not currently factors on who wins the fight
-    function getFightWinner(uint8[2] memory fighters, uint64 rng, Stats[] memory stats, uint16[] memory raptors, bool dr, address minterContract) internal returns(Stats[] memory _stats){
+    function getFightWinner(GameVars memory gameVars) internal returns(GameVars memory){
         uint8 index;
-        (rng%2 == 0) ? index = fighters[0] : index = fighters[1]; 
+        (gameVars.expandedNums[4]%2 == 0) ? index = gameVars.fighters[0] : index = gameVars.fighters[1]; 
 
-        if(index == fighters[0]){ 
-            stats[fighters[1]] = upgradeAggressiveness(stats[fighters[1]], rng); 
-            stats[fighters[0]] = upgradeStrength(stats[fighters[0]], rng);
-            emit FightWinner(raptors[fighters[0]]);
-            if(!dr){
-                emit InjuredRaptor(raptors[fighters[1]]);
-                stats[fighters[1]] = addCooldownPeriod(stats[fighters[1]]);
+        if(index == gameVars.fighters[0]){ 
+            gameVars.stats[gameVars.fighters[1]] = upgradeAggressiveness(gameVars.stats[gameVars.fighters[1]], gameVars.expandedNums[2]); 
+            gameVars.stats[gameVars.fighters[0]] = upgradeStrength(gameVars.stats[gameVars.fighters[0]], gameVars.expandedNums[3]);
+            emit FightWinner(gameVars.raptors[gameVars.fighters[0]]);
+            if(!gameVars.dr){
+                emit InjuredRaptor(gameVars.raptors[gameVars.fighters[1]]);
+                gameVars.stats[gameVars.fighters[1]] = addCooldownPeriod(gameVars.stats[gameVars.fighters[1]]);
             } else{
-                _kill(raptors[fighters[1]], minterContract);
-                emit RipRaptor(raptors[fighters[1]]);
+                _kill(gameVars.raptors[gameVars.fighters[1]], gameVars.minterContract);
+                emit RipRaptor(gameVars.raptors[gameVars.fighters[1]]);
             }
         }else{
-            stats[fighters[0]] = upgradeAggressiveness(stats[fighters[0]], rng);
+            gameVars.stats[gameVars.fighters[0]] = upgradeAggressiveness(gameVars.stats[gameVars.fighters[0]], gameVars.expandedNums[2]);
             
-            stats[fighters[1]] = upgradeStrength(stats[fighters[1]], rng);
+            gameVars.stats[gameVars.fighters[1]] = upgradeStrength(gameVars.stats[gameVars.fighters[1]], gameVars.expandedNums[5]);
             
-            emit FightWinner(raptors[fighters[1]]);
-            if(!dr){
-                stats[fighters[0]] = addCooldownPeriod(stats[fighters[0]]);
-                emit InjuredRaptor(raptors[fighters[0]]);
+            emit FightWinner(gameVars.raptors[gameVars.fighters[1]]);
+            if(!gameVars.dr){
+                gameVars.stats[gameVars.fighters[0]] = addCooldownPeriod(gameVars.stats[gameVars.fighters[0]]);
+                emit InjuredRaptor(gameVars.raptors[gameVars.fighters[0]]);
             } else{
-                _kill(raptors[fighters[0]], minterContract);
-                emit RipRaptor(raptors[fighters[0]]);
+                _kill(gameVars.raptors[gameVars.fighters[0]], gameVars.minterContract);
+                emit RipRaptor(gameVars.raptors[gameVars.fighters[0]]);
             }
         }
+        return gameVars;
     }
 
-    function getFastest(uint[] memory time, uint8[2] memory indexesToIgnore, uint8 n) internal pure returns (uint8[3] memory places){
+    function getFastest(GameVars memory gameVars) internal pure returns (GameVars memory){
         uint16 lowest=20000;
         uint8 winner;
         uint8 second;
         uint8 third;
-        for(uint8 i =0; i< n; i++){
-            if(i != indexesToIgnore[0] || i != indexesToIgnore[1]){
-                if(time[i]<lowest){
+        for(uint8 i =0; i< gameVars.n; i++){
+            if(i != gameVars.fighters[0] || i != gameVars.fighters[1]){
+                if(gameVars.time[i]<lowest){
                     third = second;
                     second = winner;
                     winner = i;
-                    lowest = uint16(time[i]);            
+                    lowest = uint16(gameVars.time[i]);            
                 }
             }
         }
         
-        places =  [winner, second, third];
+        return gameVars;
     }
 
-    function getWinner(Stats[] memory stats, uint8[2] memory indexesToIgnore, uint8 n, uint64[] memory rng, uint256 distance) internal returns(uint8[3] memory places){
-        require(rng.length == n);
-        //get randomness for each raptor
-        uint8[] memory randomness = new uint8[](n);
-        for(uint8 i =0; i< n; i++){
-            randomness[i] = uint8(rng[i] % 5);
-        }
+    function getWinner(GameVars memory gameVars) internal returns(GameVars memory){
+        require(gameVars.expandedNums.length == gameVars.n);
 
+        //get randomness for each raptor
         //calc times to finish the race first with added randomness
-        uint256[] memory time = new uint256[](n);
-        for(uint8 i =0; i< n; i++){
-            time[i] = distance / (stats[i].speed + randomness[i]);
-        }
+        uint8 i =0;
+        uint8[] memory randomness = new uint8[](gameVars.n);
+        for(; i< gameVars.n; i++){
+            randomness[i] = uint8(gameVars.expandedNums[i] % 5);
+            gameVars.time[i] = gameVars.distance / (gameVars.stats[i].speed + randomness[i]);
+        }      
         
         //gets fastest indexes & ignores fighter indexes
-        places = getFastest(time, indexesToIgnore,n);
+        gameVars = getFastest(gameVars);
+        return gameVars;
     }
 
     //-------------------------Helpers--------------------------------//
@@ -248,10 +248,10 @@ library gameLib {
         }
         
         //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
-        gameVars.fighters = getFighters([gameVars.expandedNums[0],gameVars.expandedNums[1]], gameVars.n);
-        gameVars.stats = getFightWinner(gameVars.fighters, gameVars.expandedNums[6], gameVars.stats,gameVars.raptors, gameVars.dr, gameVars.minterContract);
+        gameVars = getFighters(gameVars);
+        gameVars = getFightWinner(gameVars);
         //gets the winner & next two places
-        gameVars.places = getWinner(gameVars.stats,gameVars.fighters, gameVars.n, gameVars.expandedNums, gameVars.distance);
+        gameVars = getWinner(gameVars);
         
         //modify states //index 0 = winner; index 1 = second; index 2 = third
         
@@ -296,10 +296,10 @@ library gameLib {
         }
         
         //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
-        gameVars.fighters = getFighters([gameVars.expandedNums[0],gameVars.expandedNums[1]], gameVars.n);
-        gameVars.stats = getFightWinner(gameVars.fighters, gameVars.expandedNums[6], gameVars.stats, gameVars.raptors, gameVars.dr, gameVars.minterContract);
+        gameVars = getFighters(gameVars);
+        gameVars = getFightWinner(gameVars);
         //gets the winner & next two places
-        gameVars.places = getWinner(gameVars.stats,gameVars.fighters, gameVars.n, gameVars.expandedNums, gameVars.distance);
+        gameVars = getWinner(gameVars);
         
         //modify states //index 0 = winner; index 1 = second; index 2 = third
         
@@ -341,10 +341,10 @@ library gameLib {
         }
         
         //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
-        gameVars.fighters = getFighters([gameVars.expandedNums[0],gameVars.expandedNums[1]], gameVars.n);
-        gameVars.stats = getFightWinner(gameVars.fighters, gameVars.expandedNums[6], gameVars.stats, gameVars.raptors, gameVars.dr, gameVars.minterContract);
+        gameVars = getFighters(gameVars);
+        gameVars = getFightWinner(gameVars);
         //gets the winner & next two places
-        gameVars.places = getWinner(gameVars.stats,gameVars.fighters, gameVars.n, gameVars.expandedNums, gameVars.distance);
+        gameVars = getWinner(gameVars);
         
         //modify states //index 0 = winner; index 1 = second; index 2 = third
         
