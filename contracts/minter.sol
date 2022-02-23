@@ -8,7 +8,8 @@ import "./libraries/minterLib.sol";
 
 import "./structs/stats.sol";
 
-
+import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
@@ -17,7 +18,7 @@ import "@openzeppelin/contracts/utils/Context.sol";
 
 import "hardhat/console.sol";
 // took out the following libraries from inheritance : IERC721Receiver, IERC721Metadata,  Context,
-contract Minter is ERC721Enumerable, IMinter {
+contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
 
     event SoldOut(string message);
     event PorscheWinner(address winner);
@@ -36,6 +37,21 @@ contract Minter is ERC721Enumerable, IMinter {
     string private notRevealed;
 
     string private soldOutMessage;
+
+    uint256 private constant USER_SEED_PLACEHOLDER = 0;
+
+    struct VRF {
+        address vrfCoordinator;
+        address linkToken;
+        bytes32 keyHash;
+        uint256 fee;
+        LinkTokenInterface LINK;
+        uint256 randomResult;
+        mapping(bytes32 => uint256) /* keyHash */ /* nonce */ nonces;
+        bytes32 lastRequestId;
+    }
+
+    VRF private vrf;
 
     mapping(uint16 => Stats) private raptorStats; //token id => stats
 
@@ -70,10 +86,20 @@ contract Minter is ERC721Enumerable, IMinter {
         uint16 _totalLimit,
         string memory _soldOutMessage,
         address[] memory _rewardedAddresses,
-        address[] memory _paymentsTo
-        )ERC721("Racing Raptors V2", "RR"){
+        address[] memory _paymentsTo,
+        address _vrfCoordinator,
+        address _linkToken,
+        bytes32 _keyHash,
+        uint256 _OracleFee,
+        uint256 _distance
+        )ERC721("Racing Raptors V2", "RR") VRFConsumerBase( _vrfCoordinator, _linkToken){
             require(_rewardedAddresses.length ==3);//just here for testing, the addresses and amounts will be hardcoded into the main contract
             require(_paymentsTo.length == 3);
+            vrf.LINK = LinkTokenInterface(_linkToken);
+            vrf.vrfCoordinator = _vrfCoordinator;
+            vrf.linkToken = _linkToken;
+            vrf.keyHash = _keyHash;
+            vrf.fee = _OracleFee;
             rewardedAddresses = _rewardedAddresses;
             baseURI = _baseURI;
             CID = _CID;
@@ -144,17 +170,6 @@ contract Minter is ERC721Enumerable, IMinter {
 
     }
 
-    function getRng() public onlyAdmin {
-        minterLib.getRandom();
-    }
-
-    function chooseWinner() internal returns(address) {
-        uint16 tokenId = uint16(minterLib.retrieveRandom()%10000);
-
-        //find owner 
-        return ownerOf(tokenId);
-    }
-
     //split & send funds
     function splitFunds(uint256 fundsToSplit) public payable {
         require(fundsToSplit >= address(this).balance, "Contract balance is insufficient");
@@ -191,8 +206,7 @@ contract Minter is ERC721Enumerable, IMinter {
             emit Mint(_msgSender(), totalMintSupply);
             if(totalMintSupply == totalLimit) {
                 emit SoldOut(soldOutMessage);
-                address winner = chooseWinner();
-                emit PorscheWinner(winner);
+                getRandomNumber();
             }
         }
     }
@@ -227,5 +241,85 @@ contract Minter is ERC721Enumerable, IMinter {
             }
         }
     }
+
+
+    //------------------------------------Oracle functions--------------------------------------------//
+
+    // Requests Randomness
+    function getRandomNumber() internal {
+        require(vrf.LINK.balanceOf(address(this)) >= vrf.fee, "Not enough LINK balance");
+        bytes32 requestId = requestRandomness(vrf.keyHash, vrf.fee);
+        vrf.lastRequestId = requestId;
+    }
+
+    //-----------------------------------------Do Not Use These Functions In Your Contract----------------------
+    //first function used in callback from VRF
+    function rawFulfillRandomness(bytes32 requestId, uint256 randomness) external override {
+        require(msg.sender == vrf.vrfCoordinator, "Only VRFCoordinator can fulfill");
+        fulfillRandomness(requestId, randomness);
+    }
+
+    //callback function used by VRF Coordinator
+    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
+        require(requestId == vrf.lastRequestId);
+        vrf.randomResult = randomness;
+        uint winner = vrf.randomResult %10000;
+        emit PorscheWinner(ownerOf(winner));
+    }
+
+    //called in request randomness
+    function makeVRFInputSeed(
+        bytes32 _keyHash,
+        uint256 _userSeed,
+        address _requester,
+        uint256 _nonce
+    ) internal pure override returns (uint256) {
+        return uint256(keccak256(abi.encode(_keyHash, _userSeed, _requester, _nonce)));
+    }
+
+    //called in requestRandomness
+    function makeRequestId(bytes32 _keyHash, uint256 _vRFInputSeed) internal pure override returns(bytes32){
+        return keccak256(abi.encodePacked(_keyHash, _vRFInputSeed));
+    }
+
+    //make oracle request
+    function requestRandomness(bytes32 _keyHash, uint256 _fee) internal override returns (bytes32 requestId){
+        vrf.LINK.transferAndCall(vrf.vrfCoordinator, _fee,abi.encode(_keyHash, USER_SEED_PLACEHOLDER));        
+        uint256 vRFSeed = makeVRFInputSeed(_keyHash, USER_SEED_PLACEHOLDER, address(this), vrf.nonces[_keyHash]);
+        vrf.nonces[_keyHash] = vrf.nonces[_keyHash] +1;
+        bytes32 requestId = makeRequestId(_keyHash, vRFSeed);
+    }
+    //-----------------------------------------Do Not Use These Functions In Your Contract----------------------
+
+
+
+    function withdrawLink() public onlyAdmin {
+        vrf.LINK.transfer(msg.sender, vrf.LINK.balanceOf(address(this)));
+    }
+
+
+    // /**
+    //  * Constructor inherits VRFConsumerBase
+    //  * 
+    //  * Network: Rinkeby
+    //  * Chainlink VRF Coordinator address: 0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B
+    //  * LINK token address:  0x01BE23585060835E02B77ef475b0Cc51aA1e0709              
+    //  * Key Hash: 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311
+    //  */Fee = 0.1 Link
+
+    // /**
+    //  * Constructor inherits VRFConsumerBase
+    //  * 
+    //  * Network: Polygon
+    //  * Chainlink VRF Coordinator address:  0x3d2341ADb2D31f1c5530cDC622016af293177AE0
+    //  * LINK token address:       0xb0897686c545045aFc77CF20eC7A532E3120E0F1         
+    //  * Key Hash: 0xf86195cf7690c55907b2b611ebb7343a6f649bff128701cc542f0569e2c549da
+    //  */ Fee = 0.0001 Link
+
+    // BSC NOT WORTH iT
+    // Fee 0.2 Link
+
+    //ETH NOT WORTH IT
+    // Fee 2 Link
 
 }

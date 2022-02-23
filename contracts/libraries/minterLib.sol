@@ -2,9 +2,6 @@
 pragma solidity ^0.8.7;
 
 
-import "./simpleOracleLibrary.sol";
-import "hardhat/console.sol";
-
 library minterLib {
 
     function updatePrice(uint _price)internal pure returns(uint price) {
@@ -19,14 +16,6 @@ library minterLib {
         } else {
             return false;
         }
-    }
-
-    function getRandom() internal {
-        SimpleOracleLibrary.getRandomNumber();
-    }
-    
-    function retrieveRandom() internal returns(uint){
-        return SimpleOracleLibrary.getNumber();
     }
 
     function getAmounts(uint _amount, uint _totalSupply) internal pure returns(uint8 amountBefore, uint8 amountAfter){
