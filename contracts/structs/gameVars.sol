@@ -10,6 +10,7 @@ struct GameVars {
     address minterContract;
     uint distance;
     uint8[2] fighters;
+    uint8 fightWinner;
     uint8[3] places;
     bool dr;
     uint[] time;

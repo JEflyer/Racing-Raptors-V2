@@ -88,24 +88,25 @@ library gameLib {
         (gameVars.expandedNums[4]%2 == 0) ? index = gameVars.fighters[0] : index = gameVars.fighters[1]; 
 
         if(index == gameVars.fighters[0]){ 
-            gameVars.stats[gameVars.fighters[1]] = upgradeAggressiveness(gameVars.stats[gameVars.fighters[1]], gameVars.expandedNums[2]); 
-            gameVars.stats[gameVars.fighters[0]] = upgradeStrength(gameVars.stats[gameVars.fighters[0]], gameVars.expandedNums[3]);
+            gameVars = upgradeAggressiveness(gameVars); 
+            gameVars = upgradeStrength(gameVars);
             emit FightWinner(gameVars.raptors[gameVars.fighters[0]]);
+            gameVars.fightWinner = gameVars.fighters[0];
             if(!gameVars.dr){
                 emit InjuredRaptor(gameVars.raptors[gameVars.fighters[1]]);
-                gameVars.stats[gameVars.fighters[1]] = addCooldownPeriod(gameVars.stats[gameVars.fighters[1]]);
+                gameVars = addCooldownPeriod(gameVars);
             } else{
                 _kill(gameVars.raptors[gameVars.fighters[1]], gameVars.minterContract);
                 emit RipRaptor(gameVars.raptors[gameVars.fighters[1]]);
             }
         }else{
-            gameVars.stats[gameVars.fighters[0]] = upgradeAggressiveness(gameVars.stats[gameVars.fighters[0]], gameVars.expandedNums[2]);
+            gameVars = upgradeAggressiveness(gameVars);
             
-            gameVars.stats[gameVars.fighters[1]] = upgradeStrength(gameVars.stats[gameVars.fighters[1]], gameVars.expandedNums[5]);
-            
+            gameVars = upgradeStrength(gameVars);
+            gameVars.fightWinner = gameVars.fighters[1];
             emit FightWinner(gameVars.raptors[gameVars.fighters[1]]);
             if(!gameVars.dr){
-                gameVars.stats[gameVars.fighters[0]] = addCooldownPeriod(gameVars.stats[gameVars.fighters[0]]);
+                gameVars = addCooldownPeriod(gameVars);
                 emit InjuredRaptor(gameVars.raptors[gameVars.fighters[0]]);
             } else{
                 _kill(gameVars.raptors[gameVars.fighters[0]], gameVars.minterContract);
@@ -155,80 +156,100 @@ library gameLib {
 
     //------------------------Stat-Changes------------------------------//
                        // -------  +vary ----------//
-    function upgradeAggressiveness(Stats memory stats, uint64 rng) internal returns(Stats memory){
-        uint8 rand = uint8(rng %3) +1;
-        stats.agressiveness += rand;
-        return stats;
+    function upgradeAggressiveness(GameVars memory gameVars) internal returns(GameVars memory){
+        uint8 rand = uint8(gameVars.expandedNums[5] %3) +1;
+        uint8 index;
+        (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 1) : (index = 0);
+        gameVars.stats[index].agressiveness += rand;
+        return gameVars;
     }
 
-    function upgradeStrength(Stats memory stats, uint64 rng) internal returns(Stats memory){
-        uint8 rand = uint8(rng %3) +1;
-        stats.strength += rand;
-        return stats;
+    function upgradeStrength(GameVars memory gameVars) internal returns(GameVars memory){
+        uint8 rand = uint8(gameVars.expandedNums[4] %3) +1;
+        uint8 index;
+        (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 0) : (index = 1);
+        gameVars.stats[index].strength += rand;
+        return gameVars;
     }
 
-    function upgradeSpeed(Stats memory stats, uint64 rng) internal returns(Stats memory){
-        uint8 rand = uint8(rng %3) +1;
-        stats.speed += rand;
-        return stats;
+    function upgradeSpeed(GameVars memory gameVars) internal returns(GameVars memory){
+        uint8 rand = uint8(gameVars.expandedNums[7] %3) +1;
+        gameVars.stats[gameVars.places[0]].speed += rand;
+        return gameVars;
     }
                        // -------  +Vary ----------//
 
                        // -------  +1 ----------//
-    function increaseQPWins(Stats memory stats) internal pure returns(Stats memory){
-        stats.quickPlayRacesWon += 1;
-        stats.totalRacesTop3Finish +=1;
-        return stats;
+    function increaseQPWins(GameVars memory gameVars) internal pure returns(GameVars memory){
+        gameVars.stats[gameVars.places[0]].quickPlayRacesWon += 1;
+        gameVars.stats[gameVars.places[0]].totalRacesTop3Finish +=1;
+        return gameVars;
     }
 
-    function increaseQPLosses(Stats memory stats) internal pure returns(Stats memory){
-        stats.quickPlayRacesLost += 1;
-        return stats;
+    function increaseQPLosses(GameVars memory gameVars) internal pure returns(GameVars memory){
+        for(uint i = 0; i< gameVars.stats.length; i++){
+            if(i != gameVars.places[0]) gameVars.stats[i].quickPlayRacesLost += 1;
+        }
+        return gameVars;
     }
 
-    function increaseCompWins(Stats memory stats) internal pure returns(Stats memory){
-        stats.compRacesWon += 1;
-        stats.totalRacesTop3Finish += 1;
-        return stats;
+    function increaseCompWins(GameVars memory gameVars) internal pure returns(GameVars memory){
+        gameVars.stats[gameVars.places[0]].compRacesWon += 1;
+        gameVars.stats[gameVars.places[0]].totalRacesTop3Finish += 1;
+        return gameVars;
     }
 
-    function increaseCompLosses(Stats memory stats) internal pure returns(Stats memory){
-        stats.compRacesLost += 1;
-        return stats;
+    function increaseCompLosses(GameVars memory gameVars) internal pure returns(GameVars memory){
+        for(uint i = 0; i< gameVars.stats.length; i++){
+            if(i != gameVars.places[0]) gameVars.stats[i].compRacesLost += 1;
+        }
+        return gameVars;
     }
 
-    function increaseDeathRaceWins(Stats memory stats) internal pure returns(Stats memory){
-        stats.deathRacesWon += 1;
-        stats.deathRacesSurvived += 1;
-        stats.totalRacesTop3Finish += 1;
-        return stats;
+    function increaseDeathRaceWins(GameVars memory gameVars) internal pure returns(GameVars memory){
+        gameVars.stats[gameVars.places[0]].deathRacesWon += 1;
+        gameVars.stats[gameVars.places[0]].deathRacesSurvived += 1;
+        gameVars.stats[gameVars.places[0]].totalRacesTop3Finish += 1;
+        return gameVars;
     }
 
-    function increaseDeathRaceLosses(Stats memory stats) internal pure returns(Stats memory){
-        stats.deathRacesLost += 1;
-        return stats;
+    function increaseDeathRaceLosses(GameVars memory gameVars) internal pure returns(GameVars memory){
+        for(uint i = 0; i< gameVars.stats.length; i++){
+            if(i != gameVars.places[0]) gameVars.stats[i].deathRacesLost += 1;
+        }
+        return gameVars;
     }
 
-    function increaseDeathRacesSurvived(Stats memory stats) internal pure returns(Stats memory){
-        stats.deathRacesSurvived += 1;
-        return stats;
+    function increaseDeathRacesSurvived(GameVars memory gameVars) internal pure returns(GameVars memory){
+        uint8 index;
+        (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 1) : (index = 0);
+
+        for(uint i =0; i< gameVars.stats.length; i++){
+            if(i != index) gameVars.stats[i].deathRacesSurvived += 1;
+        }
+        return gameVars;
     }
 
-    function increaseTop3RaceFinishes(Stats memory stats) internal pure returns(Stats memory){
-        stats.totalRacesTop3Finish += 1;
-        return stats;
+    function increaseTop3RaceFinishes(GameVars memory gameVars) internal pure returns(GameVars memory){
+        for(uint i = 0; i < 3; i++){
+            gameVars.stats[gameVars.places[i]].totalRacesTop3Finish += 1;
+        }
+        return gameVars;
     }
                        // -------  +1 ----------//
 
          // -----  +12 Hours/ Unless Founding Raptor 6 Hours -----//
     
-    function addCooldownPeriod(Stats memory stats) internal view returns(Stats memory){
-        if(stats.foundingRaptor == true){
-            stats.cooldownTime = block.timestamp + 6 hours;
+    function addCooldownPeriod(GameVars memory gameVars) internal view returns(GameVars memory){
+        uint8 index;
+        (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 1) : (index = 0);
+
+        if(gameVars.stats[index].foundingRaptor == true){
+            gameVars.stats[index].cooldownTime = block.timestamp + 6 hours;
         } else {
-            stats.cooldownTime += block.timestamp + 12 hours;
+            gameVars.stats[index].cooldownTime += block.timestamp + 12 hours;
         }
-        return stats;
+        return gameVars;
     }
          // -----  +12 Hours/ Unless Founding Raptor 6 Hours -----//
     //------------------------Stat-Changes---------------------------------//
@@ -253,33 +274,27 @@ library gameLib {
         //gets the winner & next two places
         gameVars = getWinner(gameVars);
         
-        //modify states //index 0 = winner; index 1 = second; index 2 = third
-        
-        gameVars.stats[gameVars.places[0]] = increaseQPWins(gameVars.stats[gameVars.places[0]]);
-        gameVars.stats[gameVars.places[0]] = upgradeSpeed(gameVars.stats[gameVars.places[0]], gameVars.expandedNums[2]);
-        gameVars.stats[gameVars.places[1]] = increaseTop3RaceFinishes(gameVars.stats[gameVars.places[1]]);
-        gameVars.stats[gameVars.places[2]] = increaseTop3RaceFinishes(gameVars.stats[gameVars.places[2]]);
-        
-        i =0;
-
-        //modify losses/survivals & update 
-        for(; i<gameVars.n; i++){
-            
-            if(i != gameVars.fighters[0] || i != gameVars.fighters[1] || i != gameVars.places[0]){
-                gameVars.stats[i] = increaseDeathRacesSurvived(gameVars.stats[i]);
-            }
-
-            if(i != gameVars.places[0]){
-                gameVars.stats[i] = increaseQPLosses(gameVars.stats[i]);
-            }
-            updateStats(gameVars.stats[i], gameVars.raptors[i], gameVars.minterContract);
-        }
+        gameVars = handleQPStats(gameVars);
 
 
         emit QuickPlayRaceWinner(gameVars.raptors[gameVars.places[0]]);
 
         return gameVars.raptors[gameVars.places[0]];
 
+    }
+
+    function handleQPStats(GameVars memory gameVars) internal returns(GameVars memory){
+        gameVars = increaseQPWins(gameVars);
+        gameVars = upgradeSpeed(gameVars);
+        gameVars = increaseTop3RaceFinishes(gameVars);
+        gameVars= increaseQPLosses(gameVars);
+        gameVars = upgradeAggressiveness(gameVars);
+        gameVars = upgradeStrength(gameVars);
+        
+        for(uint8 i = 0; i<gameVars.n; i++){
+            updateStats(gameVars.stats[i], gameVars.raptors[i], gameVars.minterContract);
+        }
+        return gameVars;
     }
 
     //---------------------------QP--------------------------------------//
@@ -303,26 +318,29 @@ library gameLib {
         
         //modify states //index 0 = winner; index 1 = second; index 2 = third
         
-        gameVars.stats[gameVars.places[0]] = increaseCompWins(gameVars.stats[gameVars.places[0]]);
-        gameVars.stats[gameVars.places[0]] = upgradeSpeed(gameVars.stats[gameVars.places[0]], gameVars.expandedNums[2]);
-        gameVars.stats[gameVars.places[1]] = increaseTop3RaceFinishes(gameVars.stats[gameVars.places[1]]);
-        gameVars.stats[gameVars.places[2]] = increaseTop3RaceFinishes(gameVars.stats[gameVars.places[2]]);
-
-        i = 0;  
-
-        //modify losses & update 
-        for(; i<gameVars.n; i++){
-            if(i != gameVars.places[0]){
-                gameVars.stats[i] = increaseCompLosses(gameVars.stats[i]);
-            }
-            updateStats(gameVars.stats[i], gameVars.raptors[i], gameVars.minterContract);
-        }
+        gameVars = handleCompStats(gameVars);       
 
 
         emit CompetitiveRaceWinner(gameVars.raptors[gameVars.places[0]]);
 
         return gameVars.raptors[gameVars.places[0]];
 
+    }
+
+    function handleCompStats(GameVars memory gameVars) internal returns(GameVars memory){
+        gameVars = increaseCompWins(gameVars);
+        gameVars = upgradeSpeed(gameVars);
+        gameVars = increaseTop3RaceFinishes(gameVars);
+        gameVars = upgradeAggressiveness(gameVars);
+        gameVars = upgradeStrength(gameVars);
+        gameVars = increaseCompLosses(gameVars);
+
+        //modify losses & update 
+        for(uint8 i = 0; i<gameVars.n; i++){
+            updateStats(gameVars.stats[i], gameVars.raptors[i], gameVars.minterContract);
+        }
+
+        return gameVars;
     }
 
     // //---------------------------------Comp--------------------------------//
@@ -346,22 +364,7 @@ library gameLib {
         //gets the winner & next two places
         gameVars = getWinner(gameVars);
         
-        //modify states //index 0 = winner; index 1 = second; index 2 = third
-        
-        gameVars.stats[gameVars.places[0]] = increaseDeathRaceWins(gameVars.stats[gameVars.places[0]]);
-        gameVars.stats[gameVars.places[0]] = upgradeSpeed(gameVars.stats[gameVars.places[0]], gameVars.expandedNums[2]);
-        gameVars.stats[gameVars.places[1]] = increaseTop3RaceFinishes(gameVars.stats[gameVars.places[1]]);
-        gameVars.stats[gameVars.places[2]] = increaseTop3RaceFinishes(gameVars.stats[gameVars.places[2]]);
-
-        i=0;
-
-        //modify losses & update 
-        for(; i<gameVars.n; i++){
-            if(i != gameVars.places[0]){
-                gameVars.stats[i] = increaseDeathRaceLosses(gameVars.stats[i]);
-            }
-            updateStats(gameVars.stats[i], gameVars.raptors[i], gameVars.minterContract);
-        }
+        gameVars = handleDRStats(gameVars);
 
         emit DeathRaceWinner(gameVars.raptors[gameVars.places[0]]);
 
@@ -371,6 +374,21 @@ library gameLib {
     // //DR Kill/BURN RAPTOR
     function _kill(uint16 raptor, address minter) internal {
         IERC721(minter).safeTransferFrom(getOwner(raptor, minter),address(0),raptor);
+    }
+
+    function handleDRStats(GameVars memory gameVars) internal returns(GameVars memory){
+        gameVars = increaseCompWins(gameVars);
+        gameVars = upgradeSpeed(gameVars);
+        gameVars = increaseTop3RaceFinishes(gameVars);
+        gameVars = upgradeAggressiveness(gameVars);
+        gameVars = upgradeStrength(gameVars);
+        gameVars = increaseDeathRaceLosses(gameVars);
+        //modify losses & update 
+        for(uint8 i = 0; i<gameVars.n; i++){
+            updateStats(gameVars.stats[i], gameVars.raptors[i], gameVars.minterContract);
+        }
+
+        return gameVars;
     }
 
     // //---------------------------------------DR----------------------------//
