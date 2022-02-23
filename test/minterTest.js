@@ -40,44 +40,46 @@ let newStats = {
     foundingRaptor:true,
 }
 
+describe("Contract Testing", () => {
+
 
 // describe("Testing Minter Contract", () => {
-//     beforeEach(async () => {
-//         provider = ethers.provider;
-//         [owner, addr1, addr2, addr3, addr4, addr5, addr6, addr7, addr8, addr9] = await ethers.getSigners();
+    // beforeEach(async () => {
+    //     provider = ethers.provider;
+    //     [owner, addr1, addr2, addr3, addr4, addr5, addr6, addr7, addr8, addr9] = await ethers.getSigners();
     
-//         const Minter = await ethers.getContractFactory("Minter");
-//         const Game = await ethers.getContractFactory("Game");
+    //     const Minter = await ethers.getContractFactory("Minter");
+    //     const Game = await ethers.getContractFactory("Game");
     
-//         //for minter constructor
-//         const rewardedAddresses = [addr7.address, addr8.address, addr9.address];
-//         const paymentsTo = [owner.address, addr1.address, addr2.address];
+    //     //for minter constructor
+    //     const rewardedAddresses = [addr7.address, addr8.address, addr9.address];
+    //     const paymentsTo = [owner.address, addr1.address, addr2.address];
         
-//         minter = await Minter.deploy(
-//             baseUri,
-//             CID,
-//             NotRevealed,
-//             extension,
-//             totalLimit,
-//             soldOutMessage,
-//             rewardedAddresses,
-//             paymentsTo
-//         );
+    //     minter = await Minter.deploy(
+    //         baseUri,
+    //         CID,
+    //         NotRevealed,
+    //         extension,
+    //         totalLimit,
+    //         soldOutMessage,
+    //         rewardedAddresses,
+    //         paymentsTo
+    //     );
         
         
-//         //for game constructor
-//         const communityWallet = addr6.address;
-//         const minterAddress = minter.address;
+    //     //for game constructor
+    //     const communityWallet = addr6.address;
+    //     const minterAddress = minter.address;
         
     
-//         game = await Game.deploy(
-//             minterAddress,
-//             communityWallet,
-//             QPFee,
-//             CompFee,
-//             DRFee
-//         );
-//     })
+    //     game = await Game.deploy(
+    //         minterAddress,
+    //         communityWallet,
+    //         QPFee,
+    //         CompFee,
+    //         DRFee
+    //     );
+    // })
     //--------------------------COMPLETELY-WORKING-------------------------------//
     // it("Should allow the setting of the game contract", async() => {
     //     await minter.connect(owner).updateGameAddress(game.address);
@@ -194,29 +196,62 @@ let newStats = {
 // })
 
 
-// describe("Testing Game Contract", () => {
-//     beforeEach(async()=> {
-//         minter.updateGameAddress.connect(owner)(game.address);
-//     })
-//     it("Should ", async() => {
+describe("Testing Game Contract", () => {
+    beforeEach(async()=> {
+        minter.updateGameAddress.connect(owner)(game.address);
+    })
+    it("Should allow a user to enter their raptor into the race", async() => {
 
-//     })
-//     it("Should ", async() => {
+    })
+    it("Should allow the admin to set a race", async() => {
         
-//     })
-//     it("Should ", async() => {
+    })
+    it("Should complete a QP race", async() => {
         
-//     })
-//     it("Should ", async() => {
+    })
+    it("Should complete a Comp race", async() => {
         
-//     })
-//     it("Should ", async() => {
+    })
+    it("Should complete a DR race", async() => {
         
-//     })
-//     it("Should ", async() => {
+    })
+    it("Should payout correctly on a QP race", async() => {
         
-//     })
-// })
+    })
+    it("Should payout correctly on a Comp race", async() => {
+
+    })
+    it("Should payout correctly on a DR race", async() => {
+
+    })
+    it("Should return the current race queue", async() => {
+
+    })
+    it("Should give the correct current race", async() => {
+        
+    })
+    it("Should not allow a wallet other than the admin to start a race", async() => {
+        
+    })
+    it("Should not allow a ERC721 token to be sent to the contract", async() => {
+        
+    })
+    it("Should emit an event when a QP race starts", async() => {
+        
+    })
+    it("Should emit an event when a Comp race starts", async() => {
+        
+    })
+    it("Should emit an event when a DR race starts", async() => {
+        
+    })
+    it("Should generate psuedorandom numbers from the random number provided by ", async() => {
+        
+    })
+    it("Should ", async() => {
+        
+    })
+})
 
 
 
@@ -243,3 +278,5 @@ let newStats = {
         
 //     })
 // })
+
+})

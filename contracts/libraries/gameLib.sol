@@ -6,8 +6,6 @@ import "../structs/stats.sol";
 
 import "../interfaces/IMinter.sol";
 
-import "./simpleOracleLibrary.sol";
-
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 library gameLib {
@@ -33,145 +31,144 @@ library gameLib {
     }
     //-------------------------Modifiers-------------------------------//
 
-    //-------------------------Storage-------------------------------//
-    //-------------------------Vars-------------------------------//
-    //use assembly slots for these
+    // //-------------------------Storage-------------------------------//
+    // //-------------------------Vars-------------------------------//
+    // //use assembly slots for these
 
-    bytes32 private constant distanceSlot = keccak256("Distnce");
-    // uint private distance;
+    // bytes32 private constant distanceSlot = keccak256("Distnce");
+    // // uint private distance;
     
-    bytes32 constant minterContractSlot = keccak256("Minter");
+    // bytes32 constant minterContractSlot = keccak256("Minter");
 
-    bytes32 private constant rngSlot = keccak256("RNG");
+    // bytes32 private constant rngSlot = keccak256("RNG");
     
-    //-------------------------Vars-------------------------------//
-    //-------------------------Structs-------------------------------//
-    struct DistanceStore {
-        uint distance;
-    }
-
-    struct MinterStore{
-        address minterContract;
-    }
-
-    struct RNG{
-        uint64 rng0;
-        uint64 rng1;
-        uint64 rng2;
-        uint64 rng3;
-        uint64 rng4;
-        uint64 rng5;
-        uint64 rng6;
-        uint64 rng7;
-    }
-
-    //-------------------------Structs-------------------------------//
-    //-------------------------Slotter-------------------------------//
-
-    function distanceStorage() internal pure returns (DistanceStore storage distanceStore){
-        bytes32 slot = distanceSlot;
-        assembly {
-            distanceStore.slot := slot
-        }
-    }
-
-    function minterStorage() internal pure returns (MinterStore storage minterStore){
-        bytes32 slot = minterContractSlot;
-        assembly{
-            minterStore.slot := slot
-        }
-    }
-
-    function rngStorage() internal pure returns (RNG storage rng){
-        bytes32 slot = rngSlot;
-        assembly{
-            RNG.slot := rngSlot
-        }
-    }
-
-    //-------------------------Slotter-------------------------------//
-    
-    //-------------------------Getters-------------------------------//
-
-    function _distance() internal view returns(uint){
-        return distanceStorage().distance;
-    }
-
-    function _minter() internal view returns (address) {
-        return minterStorage().minterContract;
-    }
-
-    function getRNG0() internal view returns (uint64){
-        RNG storage rng = rngStorage();
-        return rng.rng0;
-    }
-
-    function getRNG1() internal view returns (uint64){
-        RNG storage rng = rngStorage();
-        return rng.rng1;
-    }
-
-    function getRNG2() internal view returns (uint64){
-        RNG storage rng = rngStorage();
-        return rng.rng2;
-    }
-
-    function getRNG3() internal view returns (uint64){
-        RNG storage rng = rngStorage();
-        return rng.rng3;
-    }
-
-    function getRNG4() internal view returns (uint64){
-        RNG storage rng = rngStorage();
-        return rng.rng4;
-    }
-
-    function getRNG5() internal view returns (uint64){
-        RNG storage rng = rngStorage();
-        return rng.rng5;
-    }
-
-    //Not Used
-    // function getRNG6() internal view returns (uint64){
-    //     RNG storage rng = rngStorage();
-    //     return rng.rng6;
+    // //-------------------------Vars-------------------------------//
+    // //-------------------------Structs-------------------------------//
+    // struct DistanceStore {
+    //     uint distance;
     // }
 
-    // function getRNG7() internal view returns (uint64){
-    //     RNG storage rng = rngStorage();
-    //     return rng.rng7;
+    // struct MinterStore{
+    //     address minterContract;
     // }
 
-    //-------------------------Getters-------------------------------//
+    // struct RNG{
+    //     uint64 rng0;
+    //     uint64 rng1;
+    //     uint64 rng2;
+    //     uint64 rng3;
+    //     uint64 rng4;
+    //     uint64 rng5;
+    //     uint64 rng6;
+    //     uint64 rng7;
+    // }
 
-    //-------------------------Setters-------------------------------//
+    // //-------------------------Structs-------------------------------//
+    // //-------------------------Slotter-------------------------------//
 
-    function SetMinter(address minter) internal returns(bool){
-        minterStorage().minterContract = minter;
-        return true;
-    }
+    // function distanceStorage() internal pure returns (DistanceStore storage distanceStore){
+    //     bytes32 slot = distanceSlot;
+    //     assembly {
+    //         distanceStore.slot := slot
+    //     }
+    // }
 
-    function SetDistance(uint distance) internal returns(bool){
-        distanceStorage().distance = distance;
-        return true;
-    }
+    // function minterStorage() internal pure returns (MinterStore storage minterStore){
+    //     bytes32 slot = minterContractSlot;
+    //     assembly{
+    //         minterStore.slot := slot
+    //     }
+    // }
 
-    function updateRNG() internal {
-        RNG storage rng = rngStorage();
-        uint64[] values = new uint64[](8);
-        values = SimpleOracleLibrary.expand();
-        rng.rng0  = values[0];
-        rng.rng1  = values[1];
-        rng.rng2  = values[2];
-        rng.rng3  = values[3];
-        rng.rng4  = values[4];
-        rng.rng5  = values[5];
-        rng.rng6  = values[6];
-        rng.rng7  = values[7];
-    }
+    // function rngStorage() internal pure returns (RNG storage rng){
+    //     bytes32 slot = rngSlot;
+    //     assembly{
+    //         RNG.slot := rngSlot
+    //     }
+    // }
 
-    //-------------------------Setters-------------------------------//
-    //-------------------------Storage-------------------------------//
+    // //-------------------------Slotter-------------------------------//
+    
+    // //-------------------------Getters-------------------------------//
+
+    // function _distance() internal view returns(uint){
+    //     return distanceStorage().distance;
+    // }
+
+    // function _minter() internal view returns (address) {
+    //     return minterStorage().minterContract;
+    // }
+
+    // function getRNG0() internal view returns (uint64){
+    //     RNG storage rng = rngStorage();
+    //     return rng.rng0;
+    // }
+
+    // function getRNG1() internal view returns (uint64){
+    //     RNG storage rng = rngStorage();
+    //     return rng.rng1;
+    // }
+
+    // function getRNG2() internal view returns (uint64){
+    //     RNG storage rng = rngStorage();
+    //     return rng.rng2;
+    // }
+
+    // function getRNG3() internal view returns (uint64){
+    //     RNG storage rng = rngStorage();
+    //     return rng.rng3;
+    // }
+
+    // function getRNG4() internal view returns (uint64){
+    //     RNG storage rng = rngStorage();
+    //     return rng.rng4;
+    // }
+
+    // function getRNG5() internal view returns (uint64){
+    //     RNG storage rng = rngStorage();
+    //     return rng.rng5;
+    // }
+
+    // //Not Used
+    // // function getRNG6() internal view returns (uint64){
+    // //     RNG storage rng = rngStorage();
+    // //     return rng.rng6;
+    // // }
+
+    // // function getRNG7() internal view returns (uint64){
+    // //     RNG storage rng = rngStorage();
+    // //     return rng.rng7;
+    // // }
+    // // -------------------------Getters-------------------------------//
+
+    // //-------------------------Setters-------------------------------//
+
+    // function SetMinter(address minter) internal returns(bool){
+    //     minterStorage().minterContract = minter;
+    //     return true;
+    // }
+
+    // function SetDistance(uint distance) internal returns(bool){
+    //     distanceStorage().distance = distance;
+    //     return true;
+    // }
+
+    // function updateRNG() internal {
+    //     RNG storage rng = rngStorage();
+    //     uint64[] values = new uint64[](8);
+    //     values = SimpleOracleLibrary.expand();
+    //     rng.rng0  = values[0];
+    //     rng.rng1  = values[1];
+    //     rng.rng2  = values[2];
+    //     rng.rng3  = values[3];
+    //     rng.rng4  = values[4];
+    //     rng.rng5  = values[5];
+    //     rng.rng6  = values[6];
+    //     rng.rng7  = values[7];
+    // }
+
+    // //-------------------------Setters-------------------------------//
+    // //-------------------------Storage-------------------------------//
 
     //-------------------------Helpers-------------------------------//
 
@@ -202,90 +199,88 @@ library gameLib {
         prize = (pool / 100) * 95;
     }
 
-    function getRandom() internal{
-        SimpleOracleLibrary.getRandomNumber();
+    function checkBounds(uint8 input, uint8 n) internal pure returns(bool response){
+        (input < n && input >= 0) ? response = true : response = false;
     }
 
-    function checkBounds(uint8 input) internal pure returns(bool response){
-        (input < 8 && input >= 0) ? response = true : response = false;
-    }
-
-    function getFighters() internal returns(uint8[2] memory fighters){
-        uint64 rand = getRNG0();
+    function getFighters(uint64[] rng, uint8 n) internal returns(uint8[2] memory fighters){
+        require(rng.length == 2);
         
-        uint8 raptor1 = uint8(rand % 5);
-        uint8 raptor2 = uint8(rand % 8);
+        uint8 raptor1 = uint8(rng[0] % n);
+        uint8 raptor2 = uint8(rng[1] % 8);
 
-        if(raptor1 == raptor2){
-            raptor1 += uint8(rand % 3);
+        while(raptor1 == raptor2){
+            bool check = checkBounds(raptor1,n);
+            if(!check) {
+                raptor1 =0 + uint8(rng[1] % 7);
+            } 
         }
-        bool check = checkBounds(raptor1);
-        if(!check) {
-            raptor1 =0 + uint8(rand % 3);
-        } 
+
         fighters[0] = raptor1;
         fighters[1] = raptor2;
     }
 
     //agressiveness & strength not currently factors on who wins the fight
-    function getFightWinner(uint8 raptor1, uint8 raptor2) internal returns(uint8 index){
-        (getRNG1()%2 == 0) ? index = raptor1 : index = raptor2; 
+    function getFightWinner(uint8 raptor1, uint8 raptor2, uint64 rng) internal returns(uint8 index){
+        (rng%2 == 0) ? index = raptor1 : index = raptor2; 
     }
 
-    function getFastest(uint[8] memory time, uint8[2] memory indexesToIgnore) internal pure returns (uint8[3] memory places){
+    function getFastest(uint[8] memory time, uint8[2] memory indexesToIgnore, uint8 n) internal pure returns (uint8[3] memory places){
         uint16 lowest=20000;
         uint8 winner;
         uint8 second;
         uint8 third;
-        for(uint8 i =0; i< 8; i++){
+        for(uint8 i =0; i< n; i++){
             if(i != indexesToIgnore[0] || i != indexesToIgnore[1]){
-                if(time[i]<lowest){
-                    third = second;
-                    second = winner;
-                    winner = i;
-                    lowest = uint16(time[i]);            
+                for(uint8 i = 0; i<2; i++){
+                    if(time[i]<lowest){
+                        third = second;
+                        second = winner;
+                        winner = i;
+                        lowest = uint16(time[i]);            
+                    }
                 }
-
             }
         }
         places =  [winner, second, third];
     }
 
-    function getWinner(Stats[] memory stats, uint8[2] memory indexesToIgnore) internal returns(uint8[3] memory places){
+    function getWinner(Stats[] memory stats, uint8[2] memory indexesToIgnore, uint8 n, uint64[] rng, uint256 distance) internal returns(uint8[n] memory places){
+        require(rng.length == n);
         //get randomness for each raptor
-        uint8[] memory randomness = new uint8[](8);
-        for(uint8 i =0; i< 8; i++){
-            randomness[i] = uint8(getRNG2()%5);
+        uint8[] memory randomness = new uint8[](n);
+        for(uint8 i =0; i< n; i++){
+            randomness[i] = uint8(rng[i] % 5);
         }
 
         //calc times to finish the race first with added randomness
-        uint[8] memory time;
-        for(uint8 i =0; i< 8; i++){
-            time[i] = _distance() / (stats[i].speed + randomness[i]);
+        uint256[] memory time = new uint256[](n);
+        for(uint8 i =0; i< n; i++){
+            time[i] = distance / (stats[i].speed + randomness[i]);
         }
         
-        //gets fastest & ignores fighter indexes
-        places = getFastest(time, indexesToIgnore);
+        //gets fastest indexes & ignores fighter indexes
+        places = getFastest(time, indexesToIgnore,n);
     }
 
     //-------------------------Helpers--------------------------------//
 
     //------------------------Stat-Changes------------------------------//
                        // -------  +vary ----------//
-    function upgradeAggressiveness(Stats memory stats) internal returns(Stats memory){
-        uint8 rand = uint8(getRNG3() %3) +1;
+    function upgradeAggressiveness(Stats memory stats, uint64 rng) internal returns(Stats memory){
+        uint8 rand = uint8(rng %3) +1;
         stats.agressiveness += rand;
         return stats;
     }
 
-    function upgradeStrength(Stats memory stats) internal returns(Stats memory){
-        uint8 rand = uint8(getRNG4() %3) +1;
+    function upgradeStrength(Stats memory stats, uint64 rng) internal returns(Stats memory){
+        uint8 rand = uint8(rng %3) +1;
         stats.strength += rand;
         return stats;
     }
 
-    function upgradeSpeed(Stats memory stats) internal returns(Stats memory){
-        uint8 rand = uint8(getRNG5() %3) +1;
+    function upgradeSpeed(Stats memory stats, uint64 rng) internal returns(Stats memory){
+        uint8 rand = uint8(rng %3) +1;
         stats.speed += rand;
         return stats;
     }
@@ -353,38 +348,41 @@ library gameLib {
     //-----------------------------QP--------------------------------------//
 
     //QP Start
-    function _quickPlayStart(uint16[] memory raptors, uint prizePool) internal returns (uint16){
+    function _quickPlayStart(uint16[] memory raptors, uint prizePool, uint64[] expandedNums,uint8 n,address minterContract, uint256 distance) internal returns (uint16){
+        require(expandedNums.length == n);
         emit QuickPlayRaceStarted(raptors,prizePool);
 
         //get stats for each raptor
         Stats[] memory stats = new Stats[](8);
-        for (uint8 i =0; i<8;i++){
+        for (uint8 i =0; i<n;i++){
             stats[i] = getStats(raptors[i]);
         }
 
+        uint64[] randomRngs = [expandedNums[0],expandedNums[1]];
+
         //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
-        uint8[2] memory fighters = getFighters();
+        uint8[2] memory fighters = getFighters(randomRngs, n);
         uint8 fightWinner = getFightWinner(fighters[0], fighters[1]);
         uint8[2] memory indexesToIgnore = [fighters[0], fighters[1]];
 
 
         //gets the winner & next two places
-        uint8[3] memory places = getWinner(stats,indexesToIgnore);
+        uint8[3] memory places = getWinner(stats,indexesToIgnore, n, expandedNums, distance);
 
         //modify states //index 0 = winner; index 1 = second; index 2 = third
         stats[places[0]] = increaseQPWins(stats[places[0]]);
-        stats[places[0]] = upgradeSpeed(stats[places[0]]);
+        stats[places[0]] = upgradeSpeed(stats[places[0]], expandedNums[2]);
         stats[places[1]] = increaseTop3RaceFinishes(stats[places[1]]);
         stats[places[2]] = increaseTop3RaceFinishes(stats[places[2]]);
 
-        stats[fightWinner] = upgradeStrength(stats[fightWinner]);
+        stats[fightWinner] = upgradeStrength(stats[fightWinner], expandedNums[3]);
 
         if(fightWinner == fighters[0]){ 
-            stats[fighters[1]] = upgradeAggressiveness(stats[fighters[1]]); 
+            stats[fighters[1]] = upgradeAggressiveness(stats[fighters[1]], expandedNums[4]); 
             stats[fighters[1]] = addCooldownPeriod(stats[fighters[1]]);
             emit InjuredRaptor(fighters[1]);
         }else{
-            stats[fighters[0]] = upgradeAggressiveness(stats[fighters[0]]);
+            stats[fighters[0]] = upgradeAggressiveness(stats[fighters[0]], expandedNums[5]);
             stats[fighters[0]] = addCooldownPeriod(stats[fighters[0]]);
             emit InjuredRaptor(fighters[0]);
         }
@@ -392,7 +390,7 @@ library gameLib {
         emit FightWinner(fightWinner); 
 
         //modify losses/survivals & update 
-        for(uint8 i =0; i<8; i++){
+        for(uint8 i =0; i<n; i++){
             
             if(i != fighters[0] || i != fighters[1] || i != places[0]){
                 stats[i] = increaseDeathRacesSurvived(stats[i]);
@@ -407,9 +405,9 @@ library gameLib {
         //calculates reward
         uint prize = calcPrize(prizePool);
 
-        emit QuickPlayRaceWinner(places[0], prize, getOwner(places[0]));
+        emit QuickPlayRaceWinner(raptors[places[0]], prize, getOwner(raptors[places[0]]));
 
-        return places[0];
+        return raptors[places[0]];
 
     }
 
@@ -417,38 +415,41 @@ library gameLib {
     //----------------------------Comp-----------------------------------//
 
     // //Comp Start
-    function _compStart(uint16[] memory raptors, uint prizePool) internal returns(uint16){
+    function _compStart(uint16[] memory raptors, uint prizePool, uint64[] expandedNums,uint8 n,address minterContract, uint256 distance) internal returns(uint16){
+        require(expandedNums.length == n);
         emit CompetitiveRaceStarted(raptors,prizePool);
 
         //get stats for each raptor
         Stats[] memory stats = new Stats[](8);
-        for (uint8 i =0; i<8;i++){
+        for (uint8 i =0; i<n;i++){
             stats[i] = getStats(raptors[i]);
         }
 
+        uint64[] randomRngs = [expandedNums[0],expandedNums[1]];
+
         //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
-        uint8[2] memory fighters = getFighters();
+        uint8[2] memory fighters = getFighters(randomRngs, n);
         uint8 fightWinner = getFightWinner(fighters[0], fighters[1]);
         uint8[2] memory indexesToIgnore = [fighters[0], fighters[1]];
 
 
         //gets the winner & next two places
-        uint8[3] memory places = getWinner(stats,indexesToIgnore);
+        uint8[3] memory places = getWinner(stats,indexesToIgnore, n, expandedNums, distance);
 
         //modify states //index 0 = winner; index 1 = second; index 2 = third
         stats[places[0]] = increaseCompWins(stats[places[0]]);
-        stats[places[0]] = upgradeSpeed(stats[places[0]]);
+        stats[places[0]] = upgradeSpeed(stats[places[0]], expandedNums[2]);
         stats[places[1]] = increaseTop3RaceFinishes(stats[places[1]]);
         stats[places[2]] = increaseTop3RaceFinishes(stats[places[2]]);
 
-        stats[fightWinner] = upgradeStrength(stats[fightWinner]);
+        stats[fightWinner] = upgradeStrength(stats[fightWinner], expandedNums[3]);
 
         if(fightWinner == fighters[0]){ 
-            stats[fighters[1]] = upgradeAggressiveness(stats[fighters[1]]); 
+            stats[fighters[1]] = upgradeAggressiveness(stats[fighters[1]], expandedNums[4]); 
             stats[fighters[1]] = addCooldownPeriod(stats[fighters[1]]);
             emit InjuredRaptor(raptors[fighters[1]]);
         }else{
-            stats[fighters[0]] = upgradeAggressiveness(stats[fighters[0]]);
+            stats[fighters[0]] = upgradeAggressiveness(stats[fighters[0]], expandedNums[4]);
             stats[fighters[0]] = addCooldownPeriod(stats[fighters[0]]);
             emit InjuredRaptor(raptors[fighters[0]]);
         }
@@ -456,7 +457,7 @@ library gameLib {
         emit FightWinner(fightWinner);        
 
         //modify losses & update 
-        for(uint8 i =0; i<8; i++){
+        for(uint8 i =0; i<n; i++){
             if(i != places[0]){
                 stats[i] = increaseCompLosses(stats[i]);
             }
@@ -466,7 +467,7 @@ library gameLib {
         //calculates reward
         uint prize = calcPrize(prizePool);
 
-        emit CompetitiveRaceWinner(places[0], prize);
+        emit CompetitiveRaceWinner(raptors[places[0]], prize);
 
         return raptors[places[0]];
 
@@ -476,31 +477,34 @@ library gameLib {
     // //-------------------------------DR------------------------------------//
 
     // //DR Start
-    function _deathRaceStart(uint16[] memory raptors, uint prizePool) internal returns(uint16){
+    function _deathRaceStart(uint16[] memory raptors, uint prizePool, uint64[] expandedNums,uint8 n,address minterContract, uint256 distance) internal returns(uint16){
+        require(expandedNums.length == n);
         emit DeathRaceStarted(raptors,prizePool);
 
         //get stats for each raptor
         Stats[] memory stats = new Stats[](8);
-        for (uint8 i =0; i<8;i++){
+        for (uint8 i =0; i<n;i++){
             stats[i] = getStats(raptors[i]);
         }
 
+        uint64[] randomRngs = [expandedNums[0],expandedNums[1]];
+
         //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
-        uint8[2] memory fighters = getFighters();
+        uint8[2] memory fighters = getFighters(randomRngs, n);
         uint8 fightWinner = getFightWinner(fighters[0], fighters[1]);
         uint8[2] memory indexesToIgnore = [fighters[0], fighters[1]];
 
 
         //gets the winner & next two places
-        uint8[3] memory places = getWinner(stats,indexesToIgnore);
+        uint8[3] memory places = getWinner(stats,indexesToIgnore, n, expandedNums, distance);
 
         //modify states //index 0 = winner; index 1 = second; index 2 = third
         stats[places[0]] = increaseDeathRaceWins(stats[places[0]]);
-        stats[places[0]] = upgradeSpeed(stats[places[0]]);
+        stats[places[0]] = upgradeSpeed(stats[places[0]], expandedNums[2]);
         stats[places[1]] = increaseTop3RaceFinishes(stats[places[1]]);
         stats[places[2]] = increaseTop3RaceFinishes(stats[places[2]]);
 
-        stats[fightWinner] = upgradeStrength(stats[fightWinner]);
+        stats[fightWinner] = upgradeStrength(stats[fightWinner], expandedNums[3]);
 
         if(fightWinner == fighters[0]){ 
             _kill(raptors[fighters[1]]);
@@ -513,7 +517,7 @@ library gameLib {
         emit FightWinner(raptors[fightWinner]);        
 
         //modify losses & update 
-        for(uint8 i =0; i<8; i++){
+        for(uint8 i =0; i<n; i++){
             if(i != places[0]){
                 stats[i] = increaseDeathRaceLosses(stats[i]);
             }
@@ -523,7 +527,7 @@ library gameLib {
         //calculates reward
         uint prize = calcPrize(prizePool);
 
-        emit DeathRaceWinner(places[0], prize);
+        emit DeathRaceWinner(raptors[places[0]], prize);
 
         return raptors[places[0]];
     }

@@ -12,6 +12,9 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
+import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+
 contract Game is IERC721Receiver, Context{
 
     event NewAdmin(address admin);
@@ -28,6 +31,33 @@ contract Game is IERC721Receiver, Context{
     uint256 public QPFee;
     uint256 public CompFee;
     uint256 public DRFee;
+    uint8 private n;
+
+    uint256 private constant USER_SEED_PLACEHOLDER = 0;
+
+    uint64[] constant primes = [
+        6619,
+        6719,
+        7309,
+        7393,
+        7853,
+        7919,
+        7727,
+        3167
+    ];
+    
+    struct VRF {
+        address vrfCoordinator;
+        address linkToken;
+        bytes32 keyHash;
+        uint256 fee;
+        LinkTokenInterface LINK;
+        uint256 randomResult;
+        mapping(bytes32 => uint256) /* keyHash */ /* nonce */ nonces;
+        bytes32 lastRequestId;
+    }
+
+    VRF private vrf;
 
     enum CurrentRace {
         StandBy,
@@ -45,17 +75,29 @@ contract Game is IERC721Receiver, Context{
 
     CurrentRace public currentRace;
 
+    address private minterContract;
     address payable private communityWallet;
     uint16 private currentPosition;
+    uint private distance;
 
     constructor(
         address _minterContract,
         address _communityWallet,
         uint256 _QPFee,
         uint256 _CompFee,
-        uint256 _DRFee
+        uint256 _DRFee,
+        address _vrfCoordinator,
+        address _linkToken,
+        bytes32 _keyHash,
+        uint256 _OracleFee,
+        uint256 _distance
     ){
-        gameLib.SetMinter(_minterContract);
+        distance = _distance;
+        vrf.vrfCoordinator = _vrfCoordinator;
+        vrf.linkToken = _linkToken;
+        vrf.keyHash = _keyHash;
+        vrf.fee = _OracleFee;
+        minterContract = _minterContract;
         admin = _msgSender();
         communityWallet = payable(_communityWallet);
         currentRace = CurrentRace(0);
@@ -64,6 +106,7 @@ contract Game is IERC721Receiver, Context{
         CompFee = _CompFee;
         DRFee = _DRFee;
         currentPosition = 0;
+        n = 8;
     }    
 
     modifier onlyAdmin {
@@ -82,6 +125,7 @@ contract Game is IERC721Receiver, Context{
     function _payOut(uint16 winner, uint payout,uint communityPayout) internal returns(bool){
         payable(gameLib.getOwner(winner)).transfer(payout);
         communityWallet.transfer(communityPayout);
+        pot =0;
         return true;
     }
     
@@ -96,7 +140,7 @@ contract Game is IERC721Receiver, Context{
 
 
         //check if there are spaces left
-        require(currentRaptors.length <=8, "You can not join at this time");
+        require(currentRaptors.length <n, "You can not join at this time");
 
         //check the raptor is owned by _msgSender()
         require(gameLib.owns(raptor), "You do not own this raptor");
@@ -117,14 +161,8 @@ contract Game is IERC721Receiver, Context{
         currentPosition = uint8(currentRaptors.length);
 
         //if 8 entrants then start race
-        if(currentRaptors.length == 8){
-            uint16 winner = gameLib._quickPlayStart(currentRaptors, pot);
-            currentPosition = 0;
-            uint fee = gameLib.calcFee(pot);
-            uint prize = gameLib.calcPrize(pot);
-            _payOut(winner, prize, fee);
-            delete currentRace;
-            delete currentRaptors;
+        if(currentPosition == n){
+            getRandomNumber();
         } 
     }
 
@@ -134,7 +172,7 @@ contract Game is IERC721Receiver, Context{
         require(uint(currentRace) == 2, "This race queue is not available at the moment");
 
         //check if there are spaces left
-        require(currentRaptors.length <=8, "You can not join at this time");
+        require(currentRaptors.length < n, "You can not join at this time");
 
         //check that raptor is not on cooldown
         require(gameLib.getStats(raptor).cooldownTime < block.timestamp, "Your raptor is not available right now");
@@ -155,14 +193,8 @@ contract Game is IERC721Receiver, Context{
         currentPosition = uint16(currentRaptors.length);
 
         //if 8 entrants then start race
-        if(currentRaptors.length == 8){
-            uint16 winner = gameLib._compStart(currentRaptors, pot);
-            currentPosition = 0;
-            uint fee = gameLib.calcFee(pot);
-            uint prize = gameLib.calcPrize(pot);
-            _payOut(winner, prize, fee);            
-            delete currentRace;
-            delete currentRaptors;
+        if(currentPosition == n){
+            getRandomNumber();
         } 
     }
 
@@ -172,7 +204,7 @@ contract Game is IERC721Receiver, Context{
         require(uint(currentRace) == 3, "This race queue is not available at the moment");
 
         //check if there are spaces left
-        require(currentRaptors.length <=8, "You can not join at this time");
+        require(currentRaptors.length < n, "You can not join at this time");
 
         //check that raptor is not on cooldown
         require(gameLib.getStats(raptor).cooldownTime < block.timestamp, "Your raptor is not available right now");
@@ -193,14 +225,8 @@ contract Game is IERC721Receiver, Context{
         currentPosition = uint16(currentRaptors.length);
 
         //if 8 entrants then start race
-        if(currentRaptors.length == 8){
-            uint16 winner = gameLib._deathRaceStart(currentRaptors, pot);
-            currentPosition = 0;
-            uint fee = gameLib.calcFee(pot);
-            uint prize = gameLib.calcPrize(pot);
-            _payOut(winner, prize, fee);
-            delete currentRace;
-            delete currentRaptors;
+        if(currentPosition == n){
+            getRandomNumber();
         }  
     }
 
@@ -212,4 +238,125 @@ contract Game is IERC721Receiver, Context{
         revert();
         return IERC721Receiver.onERC721Received.selector;
     }
+
+    //------------------------------------Oracle functions--------------------------------------------//
+
+    // Requests Randomness
+    function getRandomNumber() internal {
+        require(vrf.LINK.balanceOf(address(this)) >= vrf.fee, "Not enough LINK balance");
+        requestRandomness(vrf.keyHash, vrf.fee);
+    }
+    
+    //------------------------------------------Helper Function----------------------------------------------
+   
+    //generate 8 random values from random value
+    function expand(uint256 _rnd) internal pure returns(uint64[n] memory expandedValues){
+        expandedValues = new uint64[](n);
+        for(uint256 i = 0; i<n ; i++){
+            expandedValues[i] = uint64(uint256(keccak256(abi.encode(_rnd,i))) % primes[i]);
+        }
+        return expandedValues;
+    }
+    //------------------------------------------Helper Function----------------------------------------------
+
+    //-----------------------------------------Do Not Use These Functions In Your Contract----------------------
+    //first function used in callback from VRF
+    function rawFulfillRandomness(bytes32 requestId, uint256 randomness) external {
+        VRF storage vrf = vrfStorage();
+        require(msg.sender == vrf.vrfCoordinator, "Only VRFCoordinator can fulfill");
+        fulfillRandomness(requestId, randomness);
+    }
+
+    //callback function used by VRF Coordinator
+    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal {
+        VRF storage vrf = vrfStorage();
+        require(requestId == vrf.lastRequestId);
+        vrf.randomResult = randomness;
+        uint64[] expandedNums = new uint64[](n);
+        expandedNums = expand(vrf.randomResult);
+        if(uint(currentRace) == 1){
+            uint16 winner = gameLib._quickPlayStart(currentRaptors, pot, expandedNums,n,minterContract);
+            currentPosition = 0;
+            uint fee = gameLib.calcFee(pot);
+            uint prize = gameLib.calcPrize(pot);
+            _payOut(winner, prize, fee);
+            delete currentRace;
+            delete currentRaptors;
+        }
+        else if(uint(currentRace) == 2){
+            uint16 winner = gameLib._compStart(currentRaptors, pot, expandedNums,n,minterContract);
+            currentPosition = 0;
+            uint fee = gameLib.calcFee(pot);
+            uint prize = gameLib.calcPrize(pot);
+            _payOut(winner, prize, fee);            
+            delete currentRace;
+            delete currentRaptors;
+        }
+        else if(uint(currentRace) == 3){
+            uint16 winner = gameLib._deathRaceStart(currentRaptors, pot, expandedNums,n,minterContract);
+            currentPosition = 0;
+            uint fee = gameLib.calcFee(pot);
+            uint prize = gameLib.calcPrize(pot);
+            _payOut(winner, prize, fee);
+            delete currentRace;
+            delete currentRaptors;
+        }
+    }
+
+    //called in request randomness
+    function makeVRFInputSeed(
+        bytes32 _keyHash,
+        uint256 _userSeed,
+        address _requester,
+        uint256 _nonce
+    ) internal pure returns (uint256) {
+        return uint256(keccak256(abi.encode(_keyHash, _userSeed, _requester, _nonce)));
+    }
+
+    //called in requestRandomness
+    function makeRequestId(bytes32 _keyHash, uint256 _vRFInputSeed) internal pure returns(bytes32){
+        return keccak256(abi.encodePacked(_keyHash, _vRFInputSeed));
+    }
+
+    //make oracle request
+    function requestRandomness(bytes32 _keyHash, uint256 _fee) internal {
+        VRF storage vrf = vrfStorage();
+        vrf.LINK.transferAndCall(vrf.vrfCoordinator, _fee,abi.encode(_keyHash, USER_SEED_PLACEHOLDER));        
+        uint256 vRFSeed = makeVRFInputSeed(_keyHash, USER_SEED_PLACEHOLDER, address(this), vrf.nonces[_keyHash]);
+        vrf.nonces[_keyHash] = vrf.nonces[_keyHash] +1;
+        bytes32 requestId = makeRequestId(_keyHash, vRFSeed);
+        vrf.lastRequestId = requestId;
+    }
+    //-----------------------------------------Do Not Use These Functions In Your Contract----------------------
+
+
+
+    function withdrawLink() public onlyAdmin {
+        vrf.LINK(vrf.linkToken).transfer(msg.sender, vrf.LINK(vrf.linkToken).balanceOf(address(this)));
+    }
+
+
+    // /**
+    //  * Constructor inherits VRFConsumerBase
+    //  * 
+    //  * Network: Rinkeby
+    //  * Chainlink VRF Coordinator address: 0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B
+    //  * LINK token address:  0x01BE23585060835E02B77ef475b0Cc51aA1e0709              
+    //  * Key Hash: 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311
+    //  */Fee = 0.1 Link
+
+    // /**
+    //  * Constructor inherits VRFConsumerBase
+    //  * 
+    //  * Network: Polygon
+    //  * Chainlink VRF Coordinator address:  0x3d2341ADb2D31f1c5530cDC622016af293177AE0
+    //  * LINK token address:       0xb0897686c545045aFc77CF20eC7A532E3120E0F1         
+    //  * Key Hash: 0xf86195cf7690c55907b2b611ebb7343a6f649bff128701cc542f0569e2c549da
+    //  */ Fee = 0.0001 Link
+
+    // BSC NOT WORTH iT
+    // Fee 0.2 Link
+
+    //ETH NOT WORTH IT
+    // Fee 2 Link
 }

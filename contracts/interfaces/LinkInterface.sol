@@ -3,6 +3,8 @@ pragma solidity ^0.8.7;
 
 interface LinkTokenInterface {
 
+  function balanceOf(address owner) external view returns (uint256 balance);
+
   /**
   * @dev transfer token to a specified address with additional data if the recipient is a contract.
   * @param _to The address to transfer to.
