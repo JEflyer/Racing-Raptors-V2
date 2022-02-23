@@ -7,6 +7,7 @@ import "./interfaces/IMinter.sol";
 import "./libraries/gameLib.sol";
 
 import "./structs/stats.sol";
+import "./structs/gameVars.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -74,6 +75,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
     ];
 
     CurrentRace public currentRace;
+    GameVars private currentVars;
 
     address private minterContract;
     address payable private communityWallet;
@@ -113,6 +115,15 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
     modifier onlyAdmin {
         require(msg.sender == admin, "You can not call this function");
         _;
+    }
+
+    function buildVars(uint16[] memory raptors, uint64[] memory expandedNums, bool dr) internal returns (GameVars memory gameVars){
+        currentVars.raptors = raptors;
+        currentVars.expandedNums = expandedNums;
+        currentVars.minterContract = minterContract;
+        currentVars.distance = distance;
+        currentVars.n = n;
+        currentVars.dr = dr;
     }
 
     //Select Race
@@ -277,25 +288,28 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         uint prize;
         expandedNums = expand(vrf.randomResult);
         if(uint(currentRace) == 1){
-            winner = gameLib._quickPlayStart(currentRaptors, expandedNums,n,minterContract, distance);
+            winner = gameLib._quickPlayStart(buildVars(currentRaptors,expandedNums,false));
             currentPosition = 0;
             _payOut(winner, gameLib.calcPrize(pot), gameLib.calcFee(pot));
             delete currentRace;
             delete currentRaptors;
+            delete currentVars;
         }
         else if(uint(currentRace) == 2){
-            winner = gameLib._compStart(currentRaptors, expandedNums,n,minterContract, distance);
+            winner = gameLib._compStart(buildVars(currentRaptors,expandedNums,false));
             currentPosition = 0;
             _payOut(winner, gameLib.calcPrize(pot), gameLib.calcFee(pot));            
             delete currentRace;
             delete currentRaptors;
+            delete currentVars;
         }
         else if(uint(currentRace) == 3){
-            winner = gameLib._deathRaceStart(currentRaptors, expandedNums,n,minterContract, distance);
+            winner = gameLib._deathRaceStart(buildVars(currentRaptors,expandedNums,true));
             currentPosition = 0;
             _payOut(winner, gameLib.calcPrize(pot), gameLib.calcFee(pot));
             delete currentRace;
             delete currentRaptors;
+            delete currentVars;
         }
     }
 
