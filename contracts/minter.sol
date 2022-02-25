@@ -53,7 +53,7 @@ contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
 
     VRF private vrf;
 
-    mapping(uint16 => Stats) private raptorStats; //token id => stats
+    mapping(uint16 => Stats) public raptorStats; //token id => stats
 
     uint256 private price;
     uint16 private totalMintSupply;
@@ -81,12 +81,6 @@ contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
     mapping(uint16 => bool) foundingRaptor;
 
     constructor(
-        string memory _baseURI,
-        string memory _CID,
-        string memory _notRevealed,
-        string memory _extension,
-        uint16 _totalLimit,
-        string memory _soldOutMessage,
         address[] memory _rewardedAddresses,
         address[] memory _paymentsTo,
         address _vrfCoordinator,
@@ -103,27 +97,23 @@ contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
             vrf.keyHash = _keyHash;
             vrf.fee = _OracleFee;
             rewardedAddresses = _rewardedAddresses;
-            baseURI = _baseURI;
-            CID = _CID;
-            notRevealed = _notRevealed;
-            extension = _extension;
+            baseURI = "https://gateway.pinata.cloud/";
+            CID = "Some CID/";
+            notRevealed = "NotRevealed Hash";
+            extension = ".JSON";
             active = true;
             totalMintSupply = 0;
-            totalLimit = _totalLimit;
+            totalLimit = 10000;
             price = 2 * 10**18;
             admin = _msgSender();
             paymentsTo = _paymentsTo;
-            soldOutMessage = _soldOutMessage;
+            soldOutMessage = "LFFFFGGGGGG";
             reward();
     }
 
     function updateGameAddress(address _gameAddress) public onlyAdmin {
         gameAddress = _gameAddress;
         emit NewGameContract(_gameAddress);
-    }
-
-    function isFoundingRaptor(uint16 raptor) public override returns(bool) {
-        return foundingRaptor[raptor];
     }
 
     function updatePaymentTo(address _paymentTo, uint8 index) public onlyAdmin {
@@ -223,11 +213,6 @@ contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
         for(uint16 i = 0; i< ownerTokenCount; i++){
             ids[i] = uint16(tokenOfOwnerByIndex(_wallet, i));
         }
-    }
-
-    function getStats(uint16 _raptor) public view override returns(Stats memory stats){
-        require(_exists(_raptor), "This token does not exist");
-        stats = raptorStats[_raptor];
     }
 
     function getCoolDown(uint16 _raptor) public view override returns(uint32 time){

@@ -9,14 +9,10 @@ interface IMinter {
 
     function getTotalMinted() external view returns (uint16 total);
 
-    function isFoundingRaptor(uint16 raptor) external returns(bool);
-
     function tokenURI(uint16 _tokenId) external view returns(string memory uri);
 
     function walletOfOwner(address _wallet) external view returns(uint16[] memory ids);
 
-
-    function getStats(uint16 _raptor) external view returns(Stats memory stats);
 
     function getSpeed(uint16 _raptor) external view returns(uint16);
 

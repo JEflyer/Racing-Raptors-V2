@@ -1,0 +1,154 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "gameLib",
+  "sourceName": "contracts/libraries/gameLib.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16[8]",
+          "name": "raptors",
+          "type": "uint16[8]"
+        }
+      ],
+      "name": "CompetitiveRaceStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "raptor",
+          "type": "uint16"
+        }
+      ],
+      "name": "CompetitiveRaceWinner",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16[8]",
+          "name": "raptors",
+          "type": "uint16[8]"
+        }
+      ],
+      "name": "DeathRaceStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "raptor",
+          "type": "uint16"
+        }
+      ],
+      "name": "DeathRaceWinner",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "raptor",
+          "type": "uint16"
+        }
+      ],
+      "name": "FightWinner",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16[2]",
+          "name": "fighters",
+          "type": "uint16[2]"
+        }
+      ],
+      "name": "Fighters",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "raptor",
+          "type": "uint16"
+        }
+      ],
+      "name": "InjuredRaptor",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16[8]",
+          "name": "raptors",
+          "type": "uint16[8]"
+        }
+      ],
+      "name": "QuickPlayRaceStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "raptor",
+          "type": "uint16"
+        }
+      ],
+      "name": "QuickPlayRaceWinner",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "raptor",
+          "type": "uint16"
+        }
+      ],
+      "name": "RipRaptor",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16[3]",
+          "name": "places",
+          "type": "uint16[3]"
+        }
+      ],
+      "name": "Top3",
+      "type": "event"
+    }
+  ],
+  "bytecode": "0x60566050600b82828239805160001a6073146043577f4e487b7100000000000000000000000000000000000000000000000000000000600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212202b542e80ef9a4b291687564927a5577799df177b40d6ead36cd237b7ee1f2a5f64736f6c63430008070033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212202b542e80ef9a4b291687564927a5577799df177b40d6ead36cd237b7ee1f2a5f64736f6c63430008070033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

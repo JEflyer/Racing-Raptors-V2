@@ -1,6 +1,5 @@
 pragma solidity ^0.8.7;
 
-
 struct GameVars {
     uint16[8] raptors;
     uint16[8] expandedNums;
