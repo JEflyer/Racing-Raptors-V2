@@ -25,14 +25,13 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
 
     address private admin;
 
-    uint16[] public currentRaptors = new uint16[](8);
+    uint16[8] public currentRaptors;
 
     uint256 public pot;
 
     uint256 public QPFee;
     uint256 public CompFee;
     uint256 public DRFee;
-    uint8 private n;
 
     uint256 private constant USER_SEED_PLACEHOLDER = 0;
 
@@ -77,39 +76,34 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
     CurrentRace public currentRace;
     GameVars private currentVars;
 
-    address private minterContract;
     address payable private communityWallet;
     uint16 private currentPosition;
-    uint private distance;
+    uint32 private distance;
 
     constructor(
         address _minterContract,
         address _communityWallet,
-        uint256 _QPFee,
-        uint256 _CompFee,
-        uint256 _DRFee,
+        uint256 _Fee,
         address _vrfCoordinator,
         address _linkToken,
         bytes32 _keyHash,
         uint256 _OracleFee,
-        uint256 _distance
+        uint32 _distance
     ) VRFConsumerBase( _vrfCoordinator, _linkToken){
-        distance = _distance;
+        gameLib.setDistance(_distance);
         vrf.LINK = LinkTokenInterface(_linkToken);
         vrf.vrfCoordinator = _vrfCoordinator;
         vrf.linkToken = _linkToken;
         vrf.keyHash = _keyHash;
         vrf.fee = _OracleFee;
-        minterContract = _minterContract;
+        gameLib.setMinter(_minterContract);
         admin = _msgSender();
         communityWallet = payable(_communityWallet);
-        currentRace = CurrentRace(0);
         pot =0;
-        QPFee = _QPFee;
-        CompFee = _CompFee;
-        DRFee = _DRFee;
+        QPFee = _Fee;
+        CompFee = _Fee * 5;
+        DRFee = _Fee * 25;
         currentPosition = 0;
-        n = 8;
     }    
 
     modifier onlyAdmin {
@@ -117,13 +111,11 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         _;
     }
 
-    function buildVars(uint16[] memory raptors, uint64[] memory expandedNums, bool dr) internal returns (GameVars memory gameVars){
+    function buildVars(uint16[8] memory raptors, uint16[8] memory expandedNums, bool dr) internal returns (GameVars memory gameVars){
         currentVars.raptors = raptors;
         currentVars.expandedNums = expandedNums;
-        currentVars.minterContract = minterContract;
-        currentVars.distance = distance;
-        currentVars.n = n;
         currentVars.dr = dr;
+        gameVars = currentVars;
     }
 
     //Select Race
@@ -134,13 +126,13 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
     }
 
     function _payOut(uint16 winner, uint payout,uint communityPayout) internal returns(bool){
-        payable(gameLib.getOwner(winner, minterContract)).transfer(payout);
+        payable(gameLib.getOwner(winner)).transfer(payout);
         communityWallet.transfer(communityPayout);
         pot =0;
         return true;
     }
     
-    function getCurrentQueue() public view returns(uint16[] memory raptors){
+    function getCurrentQueue() public view returns(uint16[8] memory raptors){
         return currentRaptors;
     }
 
@@ -151,13 +143,13 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
 
 
         //check if there are spaces left
-        require(currentRaptors.length <n, "You can not join at this time");
+        require(currentRaptors.length <8, "You can not join at this time");
 
         //check the raptor is owned by _msgSender()
-        require(gameLib.owns(raptor,minterContract), "You do not own this raptor");
+        require(gameLib.owns(raptor), "You do not own this raptor");
 
         //check that raptor is not on cooldown
-        require(gameLib.getStats(raptor, minterContract).cooldownTime < block.timestamp, "Your raptor is not available right now");
+        require(gameLib.getStats(raptor).cooldownTime < block.timestamp, "Your raptor is not available right now");
 
         //check that msg.value is the entrance fee
         require(msg.value == QPFee, "You have not sent enough funds");
@@ -172,7 +164,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         currentPosition = uint8(currentRaptors.length);
 
         //if 8 entrants then start race
-        if(currentPosition == n){
+        if(currentPosition ==8){
             getRandomNumber();
         } 
     }
@@ -183,13 +175,13 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         require(uint(currentRace) == 2, "This race queue is not available at the moment");
 
         //check if there are spaces left
-        require(currentRaptors.length < n, "You can not join at this time");
+        require(currentRaptors.length < 8, "You can not join at this time");
 
         //check that raptor is not on cooldown
-        require(gameLib.getStats(raptor, minterContract).cooldownTime < block.timestamp, "Your raptor is not available right now");
+        require(gameLib.getStats(raptor).cooldownTime < block.timestamp, "Your raptor is not available right now");
 
         //check the raptor is owned by _msgSender()
-        require(gameLib.owns(raptor, minterContract), "You do not own this raptor");
+        require(gameLib.owns(raptor), "You do not own this raptor");
 
         //check that msg.value is the entrance fee
         require(msg.value == CompFee, "You have not sent enough funds");
@@ -204,7 +196,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         currentPosition = uint16(currentRaptors.length);
 
         //if 8 entrants then start race
-        if(currentPosition == n){
+        if(currentPosition == 8){
             getRandomNumber();
         } 
     }
@@ -215,13 +207,13 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         require(uint(currentRace) == 3, "This race queue is not available at the moment");
 
         //check if there are spaces left
-        require(currentRaptors.length < n, "You can not join at this time");
+        require(currentRaptors.length < 8, "You can not join at this time");
 
         //check that raptor is not on cooldown
-        require(gameLib.getStats(raptor, minterContract).cooldownTime < block.timestamp, "Your raptor is not available right now");
+        require(gameLib.getStats(raptor).cooldownTime < block.timestamp, "Your raptor is not available right now");
 
         //check the raptor is owned by _msgSender()
-        require(gameLib.owns(raptor, minterContract), "You do not own this raptor");
+        require(gameLib.owns(raptor), "You do not own this raptor");
 
         //check that msg.value is the entrance fee
         require(msg.value == DRFee, "You have not sent enough funds");
@@ -236,7 +228,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         currentPosition = uint16(currentRaptors.length);
 
         //if 8 entrants then start race
-        if(currentPosition == n){
+        if(currentPosition == 8){
             getRandomNumber();
         }  
     }
@@ -262,10 +254,10 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
     //------------------------------------------Helper Function----------------------------------------------
    
     //generate n random values from random value
-    function expand(uint256 _rnd) internal view returns(uint64[] memory expandedValues){
-        expandedValues = new uint64[](n);
-        for(uint256 i = 0; i<n ; i++){
-            expandedValues[i] = uint64(uint256(keccak256(abi.encode(_rnd,i))) % primes[i]);
+    function expand(uint256 _rnd) internal view returns(uint16[8] memory){
+        uint16[8] memory expandedValues;
+        for(uint256 i = 0; i<8 ; i++){
+            expandedValues[i] = uint16(uint256(keccak256(abi.encode(_rnd,i))) % primes[i]);
         }
         return expandedValues;
     }
@@ -282,7 +274,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
         require(requestId == vrf.lastRequestId);
         vrf.randomResult = randomness;
-        uint64[] memory expandedNums = new uint64[](n);
+        uint16[8] memory expandedNums;
         uint16 winner;
         uint fee;
         uint prize;
