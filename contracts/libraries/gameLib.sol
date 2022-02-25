@@ -253,23 +253,9 @@ library gameLib {
         return gameVars;
     }
 
-    function increaseQPLosses(GameVars memory gameVars) internal returns(GameVars memory){
-        for(uint i = 0; i< gameVars.stats.length; i++){
-            if(i != gameVars.places[0]) gameVars.stats[i].quickPlayRacesLost += 1;
-        }
-        return gameVars;
-    }
-
     function increaseCompWins(GameVars memory gameVars) internal returns(GameVars memory){
         gameVars.stats[gameVars.places[0]].compRacesWon += 1;
         gameVars.stats[gameVars.places[0]].totalRacesTop3Finish += 1;
-        return gameVars;
-    }
-
-    function increaseCompLosses(GameVars memory gameVars) internal returns(GameVars memory){
-        for(uint i = 0; i< gameVars.stats.length; i++){
-            if(i != gameVars.places[0]) gameVars.stats[i].compRacesLost += 1;
-        }
         return gameVars;
     }
 
@@ -277,13 +263,6 @@ library gameLib {
         gameVars.stats[gameVars.places[0]].deathRacesWon += 1;
         gameVars.stats[gameVars.places[0]].deathRacesSurvived += 1;
         gameVars.stats[gameVars.places[0]].totalRacesTop3Finish += 1;
-        return gameVars;
-    }
-
-    function increaseDeathRaceLosses(GameVars memory gameVars) internal returns(GameVars memory){
-        for(uint i = 0; i< gameVars.stats.length; i++){
-            if(i != gameVars.places[0]) gameVars.stats[i].deathRacesLost += 1;
-        }
         return gameVars;
     }
 
@@ -354,7 +333,6 @@ library gameLib {
         gameVars = increaseQPWins(gameVars);
         gameVars = upgradeSpeed(gameVars);
         gameVars = increaseTop3RaceFinishes(gameVars);
-        gameVars= increaseQPLosses(gameVars);
         gameVars = upgradeAggressiveness(gameVars);
         gameVars = upgradeStrength(gameVars);
         
@@ -400,7 +378,6 @@ library gameLib {
         gameVars = increaseTop3RaceFinishes(gameVars);
         gameVars = upgradeAggressiveness(gameVars);
         gameVars = upgradeStrength(gameVars);
-        gameVars = increaseCompLosses(gameVars);
 
         //modify losses & update 
         for(uint8 i = 0; i<8; i++){
@@ -450,7 +427,6 @@ library gameLib {
         gameVars = increaseTop3RaceFinishes(gameVars);
         gameVars = upgradeAggressiveness(gameVars);
         gameVars = upgradeStrength(gameVars);
-        gameVars = increaseDeathRaceLosses(gameVars);
         //modify losses & update 
         for(uint8 i = 0; i<8; i++){
             updateStats(gameVars.stats[i], gameVars.raptors[i]);

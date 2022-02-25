@@ -207,7 +207,7 @@ contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
         for(uint8 i =0; i< _amount; i++){
             totalMintSupply += 1;
             _mint(_msgSender(), totalMintSupply);
-            raptorStats[totalMintSupply] = Stats(1,1,1,0,0,0,0,0,0,0,0,0,0,0,uint32(block.timestamp));
+            raptorStats[totalMintSupply] = Stats(1,1,1,0,0,0,0,0,0,0,uint32(block.timestamp));
             _approve(gameAddress, totalMintSupply);
             emit Mint(_msgSender(), totalMintSupply);
             if(totalMintSupply == totalLimit) {
@@ -243,7 +243,7 @@ contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
                 totalMintSupply +=1;
                 _mint(rewardedAddresses[i], totalMintSupply);
                 _approve(gameAddress, totalMintSupply);
-                raptorStats[totalMintSupply] = Stats(1,1,1,0,0,0,0,0,0,0,0,0,0,0,uint32(block.timestamp));
+                raptorStats[totalMintSupply] = Stats(1,1,1,0,0,0,0,0,0,0,uint32(block.timestamp));
                 foundingRaptor[totalMintSupply] = true;
             }
         }
