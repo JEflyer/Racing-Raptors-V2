@@ -18,5 +18,4 @@ struct Stats{
     uint16 deathRaceFightsWon;
     uint16 totalRacesTop3Finish;
     uint32 cooldownTime;
-    bool foundingRaptor;
 }

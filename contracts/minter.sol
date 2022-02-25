@@ -78,6 +78,8 @@ contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
 
     address[] public paymentsTo;
 
+    mapping(uint16 => bool) foundingRaptor;
+
     constructor(
         string memory _baseURI,
         string memory _CID,
@@ -118,6 +120,10 @@ contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
     function updateGameAddress(address _gameAddress) public onlyAdmin {
         gameAddress = _gameAddress;
         emit NewGameContract(_gameAddress);
+    }
+
+    function isFoundingRaptor(uint16 raptor) public override returns(bool) {
+        return foundingRaptor[raptor];
     }
 
     function updatePaymentTo(address _paymentTo, uint8 index) public onlyAdmin {
@@ -201,7 +207,7 @@ contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
         for(uint8 i =0; i< _amount; i++){
             totalMintSupply += 1;
             _mint(_msgSender(), totalMintSupply);
-            raptorStats[totalMintSupply] = Stats(1,1,1,0,0,0,0,0,0,0,0,0,0,0,uint32(block.timestamp),false);
+            raptorStats[totalMintSupply] = Stats(1,1,1,0,0,0,0,0,0,0,0,0,0,0,uint32(block.timestamp));
             _approve(gameAddress, totalMintSupply);
             emit Mint(_msgSender(), totalMintSupply);
             if(totalMintSupply == totalLimit) {
@@ -237,7 +243,8 @@ contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
                 totalMintSupply +=1;
                 _mint(rewardedAddresses[i], totalMintSupply);
                 _approve(gameAddress, totalMintSupply);
-                raptorStats[totalMintSupply] = Stats(1,1,1,0,0,0,0,0,0,0,0,0,0,0,uint32(block.timestamp),true);
+                raptorStats[totalMintSupply] = Stats(1,1,1,0,0,0,0,0,0,0,0,0,0,0,uint32(block.timestamp));
+                foundingRaptor[totalMintSupply] = true;
             }
         }
     }

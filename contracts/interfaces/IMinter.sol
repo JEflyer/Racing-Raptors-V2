@@ -10,7 +10,7 @@ interface IMinter {
 
     function getTotalMinted() external view returns (uint16 total);
 
-
+    function isFoundingRaptor(uint16 raptor) external returns(bool);
 
     function tokenURI(uint16 _tokenId) external view returns(string memory uri);
 

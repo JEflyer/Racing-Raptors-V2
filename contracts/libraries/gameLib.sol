@@ -310,8 +310,8 @@ library gameLib {
     function addCooldownPeriod(GameVars memory gameVars) internal returns(GameVars memory){
         uint8 index;
         (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 1) : (index = 0);
-
-        if(gameVars.stats[index].foundingRaptor == true){
+        address minter = minterStore().minterContract;
+        if(IMinter(minter).isFoundingRaptor(gameVars.raptors[index]) == true){
             gameVars.stats[index].cooldownTime = uint32(block.timestamp + 6 hours);
         } else {
             gameVars.stats[index].cooldownTime += uint32(block.timestamp + 12 hours);
