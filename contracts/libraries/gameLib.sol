@@ -261,18 +261,7 @@ library gameLib {
 
     function increaseDeathRaceWins(GameVars memory gameVars) internal returns(GameVars memory){
         gameVars.stats[gameVars.places[0]].deathRacesWon += 1;
-        gameVars.stats[gameVars.places[0]].deathRacesSurvived += 1;
         gameVars.stats[gameVars.places[0]].totalRacesTop3Finish += 1;
-        return gameVars;
-    }
-
-    function increaseDeathRacesSurvived(GameVars memory gameVars) internal returns(GameVars memory){
-        uint8 index;
-        (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 1) : (index = 0);
-
-        for(uint i =0; i< gameVars.stats.length; i++){
-            if(i != index) gameVars.stats[i].deathRacesSurvived += 1;
-        }
         return gameVars;
     }
 
