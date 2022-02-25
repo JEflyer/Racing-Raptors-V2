@@ -149,7 +149,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         require(gameLib.owns(raptor), "You do not own this raptor");
 
         //check that raptor is not on cooldown
-        require(gameLib.getStats(raptor).cooldownTime < block.timestamp, "Your raptor is not available right now");
+        require(gameLib.getTime(raptor) < block.timestamp, "Your raptor is not available right now");
 
         //check that msg.value is the entrance fee
         require(msg.value == QPFee, "You have not sent enough funds");
@@ -178,7 +178,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         require(currentRaptors.length < 8, "You can not join at this time");
 
         //check that raptor is not on cooldown
-        require(gameLib.getStats(raptor).cooldownTime < block.timestamp, "Your raptor is not available right now");
+        require(gameLib.getTime(raptor) < block.timestamp, "Your raptor is not available right now");
 
         //check the raptor is owned by _msgSender()
         require(gameLib.owns(raptor), "You do not own this raptor");
@@ -210,7 +210,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         require(currentRaptors.length < 8, "You can not join at this time");
 
         //check that raptor is not on cooldown
-        require(gameLib.getStats(raptor).cooldownTime < block.timestamp, "Your raptor is not available right now");
+        require(gameLib.getTime(raptor) < block.timestamp, "Your raptor is not available right now");
 
         //check the raptor is owned by _msgSender()
         require(gameLib.owns(raptor), "You do not own this raptor");

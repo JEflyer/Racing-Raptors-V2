@@ -13,6 +13,8 @@ library gameLib {
     //-------------------------Events-------------------------------//
     event InjuredRaptor(uint16 raptor);
     event FightWinner(uint16 raptor);
+    event Fighters(uint16[2] fighters);
+    event Top3(uint16[3] places);
 
     event QuickPlayRaceStarted(uint16[8] raptors);
     event QuickPlayRaceWinner(uint16 raptor);
@@ -75,16 +77,9 @@ library gameLib {
 
     //-------------------------Helpers-------------------------------//
 
-    function getStats(uint16 raptor) internal view returns(Stats memory stats){
+    function getTime(uint16 _raptor) internal view returns (uint32){
         MinterStore storage store = minterStore();
-        stats = IMinter(store.minterContract).getStats(raptor);
-    }
-
-    
-    function updateStats(Stats memory stats, uint16 raptor) internal returns(bool success){
-        MinterStore storage store = minterStore();
-        success = IMinter(store.minterContract).updateStats(stats, raptor);
-        require(success, "There was a problem");
+        return IMinter(store.minterContract).getCoolDown(_raptor);
     }
 
     //Check if msg.sender owns token
@@ -123,6 +118,8 @@ library gameLib {
             } 
         }
 
+        emit Fighters([gameVars.raptors[gameVars.fighters[0]],gameVars.raptors[gameVars.fighters[1]]]);
+
         return gameVars;
 
     }
@@ -132,26 +129,21 @@ library gameLib {
         uint8 index;
         (gameVars.expandedNums[4]%2 == 0) ? index = gameVars.fighters[0] : index = gameVars.fighters[1]; 
 
-        if(index == gameVars.fighters[0]){ 
-            gameVars = upgradeAggressiveness(gameVars); 
-            gameVars = upgradeStrength(gameVars);
+        if(index == gameVars.fighters[0]){
             emit FightWinner(gameVars.raptors[gameVars.fighters[0]]);
             gameVars.fightWinner = gameVars.fighters[0];
             if(!gameVars.dr){
                 emit InjuredRaptor(gameVars.raptors[gameVars.fighters[1]]);
-                gameVars = addCooldownPeriod(gameVars);
+                addCooldownPeriod(gameVars);
             } else{
                 _kill(gameVars.raptors[gameVars.fighters[1]]);
                 emit RipRaptor(gameVars.raptors[gameVars.fighters[1]]);
             }
         }else{
-            gameVars = upgradeAggressiveness(gameVars);
-            
-            gameVars = upgradeStrength(gameVars);
             gameVars.fightWinner = gameVars.fighters[1];
             emit FightWinner(gameVars.raptors[gameVars.fighters[1]]);
             if(!gameVars.dr){
-                gameVars = addCooldownPeriod(gameVars);
+                addCooldownPeriod(gameVars);
                 emit InjuredRaptor(gameVars.raptors[gameVars.fighters[0]]);
             } else{
                 _kill(gameVars.raptors[gameVars.fighters[0]]);
@@ -196,12 +188,18 @@ library gameLib {
                 }
             }
         }
-        
         return places;
     }
 
     function getWinner(GameVars memory gameVars) internal returns(GameVars memory){
         require(gameVars.expandedNums.length == 8);
+
+        uint16[8] memory speed;
+        address minter = minterStore().minterContract;
+        //get stats for each raptor
+        for (uint8 i = 0; i<8;i++){
+            speed[i] = IMinter(minter).getSpeed(gameVars.raptors[i]);
+        }
 
         //get randomness for each raptor
         //calc times to finish the race first with added randomness
@@ -211,7 +209,7 @@ library gameLib {
         uint32 distance = distanceStore().distance;
         for(; i< 8; i++){
             randomness[i] = uint8(gameVars.expandedNums[i] % 5);
-            time[i] = distance / (gameVars.stats[i].speed + randomness[i]);
+            time[i] = distance / (speed[i] + randomness[i]);
         }      
         
         //gets fastest indexes & ignores fighter indexes
@@ -223,68 +221,68 @@ library gameLib {
 
     //------------------------Stat-Changes------------------------------//
                        // -------  +vary ----------//
-    function upgradeAggressiveness(GameVars memory gameVars) internal returns(GameVars memory){
+    function upgradeAggressiveness(GameVars memory gameVars) internal {
         uint8 rand = uint8(gameVars.expandedNums[5] %3) +1;
+        address minter = minterStore().minterContract;
         uint8 index;
         (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 1) : (index = 0);
-        gameVars.stats[index].agressiveness += rand;
-        return gameVars;
+        bool success = IMinter(minter).upgradeAgressiveness(gameVars.raptors[index],rand);
+        require(success, "Error");
     }
 
-    function upgradeStrength(GameVars memory gameVars) internal returns(GameVars memory){
+    function upgradeStrength(GameVars memory gameVars) internal {
         uint8 rand = uint8(gameVars.expandedNums[4] %3) +1;
+        address minter = minterStore().minterContract;
         uint8 index;
         (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 0) : (index = 1);
-        gameVars.stats[index].strength += rand;
-        return gameVars;
+        bool success = IMinter(minter).upgradeStrength(gameVars.raptors[index], rand);
+        require(success, "Error");
     }
 
-    function upgradeSpeed(GameVars memory gameVars) internal returns(GameVars memory){
+    function upgradeSpeed(GameVars memory gameVars) internal {
         uint8 rand = uint8(gameVars.expandedNums[7] %3) +1;
-        gameVars.stats[gameVars.places[0]].speed += rand;
-        return gameVars;
+        address minter = minterStore().minterContract;
+        bool success = IMinter(minter).upgradeSpeed(gameVars.raptors[gameVars.places[0]],rand);
+        require(success, "Error");
     }
                        // -------  +Vary ----------//
 
                        // -------  +1 ----------//
-    function increaseQPWins(GameVars memory gameVars) internal returns(GameVars memory){
-        gameVars.stats[gameVars.places[0]].quickPlayRacesWon += 1;
-        gameVars.stats[gameVars.places[0]].totalRacesTop3Finish +=1;
-        return gameVars;
+    function increaseQPWins(GameVars memory gameVars) internal {
+        address minter = minterStore().minterContract;
+        bool success = IMinter(minter).upgradeQPWins(gameVars.raptors[gameVars.places[0]]);
+        require(success, "Error");
     }
 
-    function increaseCompWins(GameVars memory gameVars) internal returns(GameVars memory){
-        gameVars.stats[gameVars.places[0]].compRacesWon += 1;
-        gameVars.stats[gameVars.places[0]].totalRacesTop3Finish += 1;
-        return gameVars;
+    function increaseCompWins(GameVars memory gameVars) internal {
+        address minter = minterStore().minterContract;
+        bool success = IMinter(minter).upgradeCompWins(gameVars.raptors[gameVars.places[0]]);
+        require(success, "Error");
     }
 
-    function increaseDeathRaceWins(GameVars memory gameVars) internal returns(GameVars memory){
-        gameVars.stats[gameVars.places[0]].deathRacesWon += 1;
-        gameVars.stats[gameVars.places[0]].totalRacesTop3Finish += 1;
-        return gameVars;
+    function increaseDeathRaceWins(GameVars memory gameVars) internal {
+        address minter = minterStore().minterContract;
+        bool success = IMinter(minter).upgradeDRWins(gameVars.raptors[gameVars.places[0]]);
+        require(success, "Error");
     }
 
-    function increaseTop3RaceFinishes(GameVars memory gameVars) internal returns(GameVars memory){
+    function increaseTop3RaceFinishes(GameVars memory gameVars) internal {
+        address minter = minterStore().minterContract;
         for(uint i = 0; i < 3; i++){
-            gameVars.stats[gameVars.places[i]].totalRacesTop3Finish += 1;
+            bool success = IMinter(minter).upgradeTop3Finishes(gameVars.raptors[gameVars.places[i]]);
+            require(success, "Error");
         }
-        return gameVars;
     }
                        // -------  +1 ----------//
 
          // -----  +12 Hours/ Unless Founding Raptor 6 Hours -----//
     
-    function addCooldownPeriod(GameVars memory gameVars) internal returns(GameVars memory){
+    function addCooldownPeriod(GameVars memory gameVars) internal {
+        address minter = minterStore().minterContract;
         uint8 index;
         (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 1) : (index = 0);
-        address minter = minterStore().minterContract;
-        if(IMinter(minter).isFoundingRaptor(gameVars.raptors[index]) == true){
-            gameVars.stats[index].cooldownTime = uint32(block.timestamp + 6 hours);
-        } else {
-            gameVars.stats[index].cooldownTime += uint32(block.timestamp + 12 hours);
-        }
-        return gameVars;
+        bool success = IMinter(minter).increaseCooldownTime(gameVars.raptors[index]);
+        require(success, "Error");
     }
          // -----  +12 Hours/ Unless Founding Raptor 6 Hours -----//
     //------------------------Stat-Changes---------------------------------//
@@ -295,13 +293,6 @@ library gameLib {
     function _quickPlayStart(GameVars memory gameVars) internal returns (uint16){
         require(gameVars.expandedNums.length == 8);
         emit QuickPlayRaceStarted(gameVars.raptors);
-
-        uint8 i =0;
-
-        //get stats for each raptor
-        for (; i<8;i++){
-            gameVars.stats[i] = getStats(gameVars.raptors[i]);
-        }
         
         //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
         gameVars = getFighters(gameVars);
@@ -309,7 +300,9 @@ library gameLib {
         //gets the winner & next two places
         gameVars = getWinner(gameVars);
         
-        gameVars = handleQPStats(gameVars);
+        emit Top3([gameVars.raptors[gameVars.places[0]],gameVars.raptors[gameVars.places[1]],gameVars.raptors[gameVars.places[2]]]);
+        
+        handleQPStats(gameVars);
 
 
         emit QuickPlayRaceWinner(gameVars.raptors[gameVars.places[0]]);
@@ -318,17 +311,12 @@ library gameLib {
 
     }
 
-    function handleQPStats(GameVars memory gameVars) internal returns(GameVars memory){
-        gameVars = increaseQPWins(gameVars);
-        gameVars = upgradeSpeed(gameVars);
-        gameVars = increaseTop3RaceFinishes(gameVars);
-        gameVars = upgradeAggressiveness(gameVars);
-        gameVars = upgradeStrength(gameVars);
-        
-        for(uint8 i = 0; i<8; i++){
-            updateStats(gameVars.stats[i], gameVars.raptors[i]);
-        }
-        return gameVars;
+    function handleQPStats(GameVars memory gameVars) internal {
+        increaseQPWins(gameVars);
+        upgradeSpeed(gameVars);
+        increaseTop3RaceFinishes(gameVars);
+        upgradeAggressiveness(gameVars);
+        upgradeStrength(gameVars);
     }
 
     //---------------------------QP--------------------------------------//
@@ -339,20 +327,16 @@ library gameLib {
         require(gameVars.expandedNums.length == 8);
         emit CompetitiveRaceStarted(gameVars.raptors);
 
-        uint8 i =0;
-        for (; i<8;i++){
-            gameVars.stats[i] = getStats(gameVars.raptors[i]);
-        }
-        
         //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
         gameVars = getFighters(gameVars);
         gameVars = getFightWinner(gameVars);
         //gets the winner & next two places
         gameVars = getWinner(gameVars);
+        emit Top3([gameVars.raptors[gameVars.places[0]],gameVars.raptors[gameVars.places[1]],gameVars.raptors[gameVars.places[2]]]);
         
         //modify states //index 0 = winner; index 1 = second; index 2 = third
         
-        gameVars = handleCompStats(gameVars);       
+        handleCompStats(gameVars);       
 
 
         emit CompetitiveRaceWinner(gameVars.raptors[gameVars.places[0]]);
@@ -361,19 +345,12 @@ library gameLib {
 
     }
 
-    function handleCompStats(GameVars memory gameVars) internal returns(GameVars memory){
-        gameVars = increaseCompWins(gameVars);
-        gameVars = upgradeSpeed(gameVars);
-        gameVars = increaseTop3RaceFinishes(gameVars);
-        gameVars = upgradeAggressiveness(gameVars);
-        gameVars = upgradeStrength(gameVars);
-
-        //modify losses & update 
-        for(uint8 i = 0; i<8; i++){
-            updateStats(gameVars.stats[i], gameVars.raptors[i]);
-        }
-
-        return gameVars;
+    function handleCompStats(GameVars memory gameVars) internal {
+        increaseCompWins(gameVars);
+        upgradeSpeed(gameVars);
+        increaseTop3RaceFinishes(gameVars);
+        upgradeAggressiveness(gameVars);
+        upgradeStrength(gameVars);
     }
 
     // //---------------------------------Comp--------------------------------//
@@ -384,20 +361,14 @@ library gameLib {
         require(gameVars.expandedNums.length == 8);
         emit DeathRaceStarted(gameVars.raptors);
 
-        uint8 i =0;
-
-        //get stats for each raptor
-        for (; i<8;i++){
-            gameVars.stats[i] = getStats(gameVars.raptors[i]);
-        }
-        
         //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
         gameVars = getFighters(gameVars);
         gameVars = getFightWinner(gameVars);
         //gets the winner & next two places
         gameVars = getWinner(gameVars);
+        emit Top3([gameVars.raptors[gameVars.places[0]],gameVars.raptors[gameVars.places[1]],gameVars.raptors[gameVars.places[2]]]);
         
-        gameVars = handleDRStats(gameVars);
+        handleDRStats(gameVars);
 
         emit DeathRaceWinner(gameVars.raptors[gameVars.places[0]]);
 
@@ -410,18 +381,12 @@ library gameLib {
         IERC721(store.minterContract).safeTransferFrom(getOwner(raptor),address(0),raptor);
     }
 
-    function handleDRStats(GameVars memory gameVars) internal returns(GameVars memory){
-        gameVars = increaseCompWins(gameVars);
-        gameVars = upgradeSpeed(gameVars);
-        gameVars = increaseTop3RaceFinishes(gameVars);
-        gameVars = upgradeAggressiveness(gameVars);
-        gameVars = upgradeStrength(gameVars);
-        //modify losses & update 
-        for(uint8 i = 0; i<8; i++){
-            updateStats(gameVars.stats[i], gameVars.raptors[i]);
-        }
-
-        return gameVars;
+    function handleDRStats(GameVars memory gameVars) internal {
+        increaseCompWins(gameVars);
+        upgradeSpeed(gameVars);
+        increaseTop3RaceFinishes(gameVars);
+        upgradeAggressiveness(gameVars);
+        upgradeStrength(gameVars);
     }
 
     // //---------------------------------------DR----------------------------//

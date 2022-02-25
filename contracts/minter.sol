@@ -225,15 +225,92 @@ contract Minter is ERC721Enumerable, IMinter, VRFConsumerBase {
         }
     }
 
-    function getStats(uint16 _id) public view override returns(Stats memory stats){
-        require(_exists(_id), "This token does not exist");
-        stats = raptorStats[_id];
+    function getStats(uint16 _raptor) public view override returns(Stats memory stats){
+        require(_exists(_raptor), "This token does not exist");
+        stats = raptorStats[_raptor];
     }
 
-    function updateStats(Stats memory _stats, uint16 _id) external override onlyGameAddress returns(bool){
-        require(_exists(_id), "This token does not exist");
-        raptorStats[_id] = _stats;
-        emit StatsUpdated(_id, _stats);
+    function getCoolDown(uint16 _raptor) public view override returns(uint32 time){
+        time = raptorStats[_raptor].cooldownTime;
+    }
+
+    function getSpeed(uint16 _raptor) external view override returns(uint16){
+        require(_exists(_raptor), "This token does not exist");
+        return raptorStats[_raptor].speed;
+    }
+
+    function getStrength(uint16 _raptor) external view override returns(uint16){
+        require(_exists(_raptor), "This token does not exist");
+        return raptorStats[_raptor].strength;
+    }
+    
+    function getAgressiveness(uint16 _raptor) external view override returns(uint16){
+        require(_exists(_raptor), "This token does not exist");
+        return raptorStats[_raptor].agressiveness;
+    }
+
+    function upgradeSpeed(uint16 _raptor, uint8 _amount) external onlyGameAddress override returns(bool){
+        require(_exists(_raptor), "This token does not exist");
+        raptorStats[_raptor].speed += _amount;
+        emit StatsUpdated(_raptor,raptorStats[_raptor]);
+        return true;
+    }
+
+    function upgradeStrength(uint16 _raptor, uint8 _amount) external onlyGameAddress override returns(bool){
+        require(_exists(_raptor), "This token does not exist");
+        raptorStats[_raptor].strength += _amount;
+        emit StatsUpdated(_raptor,raptorStats[_raptor]);
+        return true;
+    }
+
+    function upgradeAgressiveness(uint16 _raptor, uint8 _amount) external onlyGameAddress override returns(bool){
+        require(_exists(_raptor), "This token does not exist");
+        raptorStats[_raptor].agressiveness += _amount;
+        emit StatsUpdated(_raptor,raptorStats[_raptor]);
+        return true;
+    }
+
+    function upgradefightsWon(uint16 _raptor) external onlyGameAddress override returns(bool){
+        require(_exists(_raptor), "This token does not exist");
+        raptorStats[_raptor].fightsWon += 1;
+        emit StatsUpdated(_raptor,raptorStats[_raptor]);
+        return true;
+    }
+
+    function upgradeQPWins(uint16 _raptor) external onlyGameAddress override returns(bool){
+        require(_exists(_raptor), "This token does not exist");
+        raptorStats[_raptor].quickPlayRacesWon += 1;
+        emit StatsUpdated(_raptor,raptorStats[_raptor]);
+        return true;
+    }
+
+    function upgradeCompWins(uint16 _raptor) external onlyGameAddress override returns(bool){
+        require(_exists(_raptor), "This token does not exist");
+        raptorStats[_raptor].compRacesWon += 1;
+        emit StatsUpdated(_raptor,raptorStats[_raptor]);
+        return true;
+    }
+
+    function upgradeDRWins(uint16 _raptor) external onlyGameAddress override returns(bool){
+        require(_exists(_raptor), "This token does not exist");
+        raptorStats[_raptor].deathRacesWon += 1;
+        emit StatsUpdated(_raptor,raptorStats[_raptor]);
+        return true;
+    }
+
+    function upgradeTop3Finishes(uint16 _raptor) external onlyGameAddress override returns(bool){
+        require(_exists(_raptor), "This token does not exist");
+        raptorStats[_raptor].totalRacesTop3Finish += 1;
+        emit StatsUpdated(_raptor,raptorStats[_raptor]);
+        return true;
+    }
+
+    function increaseCooldownTime(uint16 _raptor) external onlyGameAddress override returns(bool){
+        require(_exists(_raptor), "This token does not exist");
+        uint32 timeToIncrease;
+        (foundingRaptor[_raptor]) ? (timeToIncrease = uint32(block.timestamp + 6 hours)) : (timeToIncrease = uint32(block.timestamp + 12 hours));
+        raptorStats[_raptor].cooldownTime = timeToIncrease;
+        emit StatsUpdated(_raptor,raptorStats[_raptor]);
         return true;
     }
 
