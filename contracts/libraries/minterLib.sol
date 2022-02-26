@@ -31,7 +31,7 @@ library minterLib {
         }
     }
 
-    function getPrice(uint8 _amount, uint price, uint16 totalMintSupply) internal view returns(uint256 givenPrice){
+    function getPrice(uint8 _amount, uint price, uint16 totalMintSupply) internal pure returns(uint256 givenPrice){
         require(_amount <= 10, "Err: Too high");
         bool answer = crossesThreshold(_amount,totalMintSupply);
         if(answer){

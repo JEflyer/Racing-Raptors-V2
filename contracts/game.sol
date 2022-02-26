@@ -278,8 +278,6 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         vrf.randomResult = randomness;
         uint16[8] memory expandedNums;
         uint16 winner;
-        uint fee;
-        uint prize;
         expandedNums = expand(vrf.randomResult);
         if(uint(currentRace) == 1){
             winner = gameLib._quickPlayStart(buildVars(currentRaptors,expandedNums,false));
@@ -328,7 +326,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         vrf.LINK.transferAndCall(vrf.vrfCoordinator, _fee,abi.encode(_keyHash, USER_SEED_PLACEHOLDER));        
         uint256 vRFSeed = makeVRFInputSeed(_keyHash, USER_SEED_PLACEHOLDER, address(this), vrf.nonces[_keyHash]);
         vrf.nonces[_keyHash] = vrf.nonces[_keyHash] +1;
-        bytes32 requestId = makeRequestId(_keyHash, vRFSeed);
+        requestId = makeRequestId(_keyHash, vRFSeed);
     }
     //-----------------------------------------Do Not Use These Functions In Your Contract----------------------
 

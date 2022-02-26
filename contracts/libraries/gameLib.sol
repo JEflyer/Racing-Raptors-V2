@@ -168,11 +168,8 @@ library gameLib {
         return gameVars;
     }
 
-    function getFastest(uint8[2] memory fighters,uint32[8] memory time) internal returns (uint8[3] memory){
+    function getFastest(uint8[2] memory fighters,uint32[8] memory time) internal pure returns (uint8[3] memory){
         uint16 lowest=20000;
-        uint8 winner;
-        uint8 second;
-        uint8 third;
         uint8[3] memory places;
         uint8 i = 0;
         for(; i< 8; i++){
@@ -206,19 +203,19 @@ library gameLib {
         return places;
     }
 
-    function getWinner(GameVars memory gameVars) internal returns(GameVars memory){
+    function getWinner(GameVars memory gameVars) internal view returns(GameVars memory){
         require(gameVars.expandedNums.length == 8);
-
+        uint8 i = 0;
         uint16[8] memory speed;
         address minter = minterStore().minterContract;
         //get stats for each raptor
-        for (uint8 i = 0; i<8;i++){
+        for (; i<8;i++){
             speed[i] = IMinter(minter).getSpeed(gameVars.raptors[i]);
         }
 
         //get randomness for each raptor
         //calc times to finish the race first with added randomness
-        uint8 i =0;
+        i =0;
         uint8[8] memory randomness;
         uint32[8] memory time;
         uint32 distance = distanceStore().distance;
