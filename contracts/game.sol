@@ -215,6 +215,8 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         //check the raptor is owned by _msgSender()
         require(gameLib.owns(raptor), "You do not own this raptor");
 
+        gameLib._approve(raptor);
+
         //check that msg.value is the entrance fee
         require(msg.value == DRFee, "You have not sent enough funds");
 
@@ -302,6 +304,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
             delete currentRace;
             delete currentRaptors;
             delete currentVars;
+            gameLib.removeApproval();
         }
     }
 

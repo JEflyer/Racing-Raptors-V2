@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\game.sol": {
-      "lastModificationDate": 1645808679622,
-      "contentHash": "2e25f00e4a459e9192675f99f240e82a",
+      "lastModificationDate": 1645901561585,
+      "contentHash": "db0f62150b2eb5d9597130116ee18f7f",
       "sourceName": "contracts/game.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -83,8 +83,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\interfaces\\IMinter.sol": {
-      "lastModificationDate": 1645814847865,
-      "contentHash": "a2757c93661bf947e3744b5c61cb3777",
+      "lastModificationDate": 1645902687732,
+      "contentHash": "4c9f3547c41822bebec7bfd4254c80ea",
       "sourceName": "contracts/interfaces/IMinter.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -120,8 +120,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\libraries\\gameLib.sol": {
-      "lastModificationDate": 1645808814212,
-      "contentHash": "0b37214544abc6b453f863c382f15779",
+      "lastModificationDate": 1645902730307,
+      "contentHash": "7c0c05e380921c571d150db6e31c953f",
       "sourceName": "contracts/libraries/gameLib.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -160,8 +160,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\structs\\stats.sol": {
-      "lastModificationDate": 1645808726915,
-      "contentHash": "27d5855effa00bdec4ee928311d5b14e",
+      "lastModificationDate": 1645902670369,
+      "contentHash": "a5a06530ff9df760672a00c3d533adbf",
       "sourceName": "contracts/structs/stats.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -476,8 +476,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\minter.sol": {
-      "lastModificationDate": 1645814802224,
-      "contentHash": "3c63491991d305eb3841eb21b96a739f",
+      "lastModificationDate": 1645902770807,
+      "contentHash": "e53b50b4b56491aa167ad19387b4470a",
       "sourceName": "contracts/minter.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -503,17 +503,11 @@
         }
       },
       "imports": [
-        "./interfaces/IGame.sol",
         "./interfaces/IMinter.sol",
         "./libraries/minterLib.sol",
         "./structs/stats.sol",
         "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol",
-        "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol",
-        "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol",
-        "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol",
-        "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
-        "@openzeppelin/contracts/utils/Context.sol",
-        "hardhat/console.sol"
+        "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol"
       ],
       "versionPragmas": [
         "^0.8.7"
@@ -523,8 +517,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\libraries\\minterLib.sol": {
-      "lastModificationDate": 1645585365535,
-      "contentHash": "99ce022898e540615c91b29197ce230b",
+      "lastModificationDate": 1645902735006,
+      "contentHash": "e72e06d219ec384234f5a3ca9126a83e",
       "sourceName": "contracts/libraries/minterLib.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -593,78 +587,6 @@
       ],
       "artifacts": [
         "ERC721Enumerable"
-      ]
-    },
-    "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\IERC721Metadata.sol": {
-      "lastModificationDate": 1645053109366,
-      "contentHash": "efbc0d15b80a74e34dbe8da0f3e879bb",
-      "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
-      "solcConfig": {
-        "version": "0.8.7",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../IERC721.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "IERC721Metadata"
-      ]
-    },
-    "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\node_modules\\hardhat\\console.sol": {
-      "lastModificationDate": 1644566833465,
-      "contentHash": "cc4777addd464ea56fa35b1c45df0591",
-      "sourceName": "hardhat/console.sol",
-      "solcConfig": {
-        "version": "0.8.7",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        ">=0.4.22 <0.9.0"
-      ],
-      "artifacts": [
-        "console"
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\ERC721.sol": {
@@ -745,6 +667,43 @@
       ],
       "artifacts": [
         "IERC721Enumerable"
+      ]
+    },
+    "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\IERC721Metadata.sol": {
+      "lastModificationDate": 1645053109366,
+      "contentHash": "efbc0d15b80a74e34dbe8da0f3e879bb",
+      "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
+      "solcConfig": {
+        "version": "0.8.7",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC721.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IERC721Metadata"
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\node_modules\\@openzeppelin\\contracts\\utils\\Address.sol": {

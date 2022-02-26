@@ -11,25 +11,6 @@
           "type": "uint16"
         }
       ],
-      "name": "getAgressiveness",
-      "outputs": [
-        {
-          "internalType": "uint16",
-          "name": "",
-          "type": "uint16"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint16",
-          "name": "_raptor",
-          "type": "uint16"
-        }
-      ],
       "name": "getCoolDown",
       "outputs": [
         {
@@ -99,24 +80,16 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "getTotalMinted",
-      "outputs": [
-        {
-          "internalType": "uint16",
-          "name": "total",
-          "type": "uint16"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "uint16",
           "name": "_raptor",
           "type": "uint16"
+        },
+        {
+          "internalType": "uint32",
+          "name": "newTime",
+          "type": "uint32"
         }
       ],
       "name": "increaseCooldownTime",
@@ -128,6 +101,25 @@
         }
       ],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "raptor",
+          "type": "uint16"
+        }
+      ],
+      "name": "isFoundingRaptor",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {

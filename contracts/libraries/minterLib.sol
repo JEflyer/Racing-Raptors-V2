@@ -4,8 +4,11 @@ pragma solidity ^0.8.7;
 
 library minterLib {
 
-    function updatePrice(uint _price)internal pure returns(uint price) {
+    event PriceIncrease(uint newPrice);
+
+    function updatePrice(uint _price)internal returns(uint price) {
         price = _price << 1;
+        emit PriceIncrease(price);
     }
 
     function crossesThreshold(uint _amount, uint _totalSupply) internal pure returns (bool){
@@ -25,6 +28,17 @@ library minterLib {
                 amountAfter = uint8(_amount-amountBefore);
                 break;
             }
+        }
+    }
+
+    function getPrice(uint8 _amount, uint price, uint16 totalMintSupply) internal view returns(uint256 givenPrice){
+        require(_amount <= 10, "Err: Too high");
+        bool answer = crossesThreshold(_amount,totalMintSupply);
+        if(answer){
+            (uint8 amountBefore, uint8 amountAfter) = getAmounts(_amount,totalMintSupply);
+            givenPrice = (price*amountBefore) + (price * 2 * amountAfter);
+        } else {
+            givenPrice = price * _amount;
         }
     }
 }

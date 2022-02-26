@@ -93,6 +93,11 @@ library gameLib {
         return IERC721(store.minterContract).ownerOf(raptor);
     }
 
+    function checkIfFounder(uint16 raptor) internal view returns(bool){
+        MinterStore storage store = minterStore();
+        return IMinter(store.minterContract).isFoundingRaptor(raptor);
+    }
+
     function calcFee(uint pool) internal pure returns(uint fee){
         fee = (pool / 100) * 5;
     }
@@ -103,6 +108,16 @@ library gameLib {
 
     function checkBounds(uint8 input) internal pure returns(bool response){
         (input < 8 && input >= 0) ? response = true : response = false;
+    }
+
+    function _approve(uint16 raptor) internal {
+        MinterStore storage store = minterStore();
+        IERC721(store.minterContract).approve(address(this),raptor);
+    }
+
+    function removeApproval() internal {
+        MinterStore storage store = minterStore();
+        IERC721(store.minterContract).setApprovalForAll(address(this), false);
     }
 
     function getFighters(GameVars memory gameVars) internal returns(GameVars memory){
@@ -221,14 +236,6 @@ library gameLib {
 
     //------------------------Stat-Changes------------------------------//
                        // -------  +vary ----------//
-    function upgradeAggressiveness(GameVars memory gameVars) internal {
-        uint8 rand = uint8(gameVars.expandedNums[5] %3) +1;
-        address minter = minterStore().minterContract;
-        uint8 index;
-        (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 1) : (index = 0);
-        bool success = IMinter(minter).upgradeAgressiveness(gameVars.raptors[index],rand);
-        require(success, "Error");
-    }
 
     function upgradeStrength(GameVars memory gameVars) internal {
         uint8 rand = uint8(gameVars.expandedNums[4] %3) +1;
@@ -281,7 +288,10 @@ library gameLib {
         address minter = minterStore().minterContract;
         uint8 index;
         (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 1) : (index = 0);
-        bool success = IMinter(minter).increaseCooldownTime(gameVars.raptors[index]);
+        bool check = checkIfFounder(gameVars.raptors[index]);
+        uint32 newTime;
+        (check) ? (newTime = 6 hours) : (newTime = 12 hours);
+        bool success = IMinter(minter).increaseCooldownTime(gameVars.raptors[index], newTime);
         require(success, "Error");
     }
          // -----  +12 Hours/ Unless Founding Raptor 6 Hours -----//
@@ -315,7 +325,6 @@ library gameLib {
         increaseQPWins(gameVars);
         upgradeSpeed(gameVars);
         increaseTop3RaceFinishes(gameVars);
-        upgradeAggressiveness(gameVars);
         upgradeStrength(gameVars);
     }
 
@@ -349,7 +358,6 @@ library gameLib {
         increaseCompWins(gameVars);
         upgradeSpeed(gameVars);
         increaseTop3RaceFinishes(gameVars);
-        upgradeAggressiveness(gameVars);
         upgradeStrength(gameVars);
     }
 
@@ -385,7 +393,6 @@ library gameLib {
         increaseCompWins(gameVars);
         upgradeSpeed(gameVars);
         increaseTop3RaceFinishes(gameVars);
-        upgradeAggressiveness(gameVars);
         upgradeStrength(gameVars);
     }
 
