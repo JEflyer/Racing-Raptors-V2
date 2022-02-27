@@ -46,7 +46,7 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
     address[] rewardedAddresses;
 
     uint8[] rewardedAmounts = [
-        1,2,2
+        3
     ];
 
     address[] public paymentsTo;
