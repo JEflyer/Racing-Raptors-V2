@@ -15,7 +15,7 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
 
     event PorscheWinner(address winner);
 
-    address private admin;
+    address public admin;
     
     bool public active;
     string private baseURI = "https://gateway.pinata.cloud/";

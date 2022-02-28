@@ -32,16 +32,6 @@ let chainId;
 let Game;
 let Minter;
 
-let newStats = {
-    speed: 2,
-    strength:1,
-    fightsWon:0,
-    quickPlayRacesWon:1,
-    compRacesWon:2,
-    deathRacesWon:0,
-    totalRacesTop3Finish:0,
-    cooldownTime:0
-}
 
 describe("Contract Testing", () => {
     beforeEach(async () => {
@@ -121,54 +111,46 @@ describe("Contract Testing", () => {
         })
         
         it("Should split funds correctly if funds are sent to the contract", async() => {
-            let startingBalance = ethers.utils.formatEther(await provider.getBalance(deployer.address));
-            console.log("deployer ",startingBalance);
+            let payee1StartingBalance = ethers.utils.formatEther(await provider.getBalance(payee1.address));
+            console.log("payee1 ",payee1StartingBalance);
 
-            let pay1StartingBalance = ethers.utils.formatEther(await provider.getBalance(user2.address));
-            console.log("user2 ",pay1StartingBalance);
+            let payee2StartingBalance = ethers.utils.formatEther(await provider.getBalance(payee2.address));
+            console.log("payee2 ",payee2StartingBalance);
 
-            let pay2StartingBalance = ethers.utils.formatEther(await provider.getBalance(user3.address));
-            console.log("user3 ",pay2StartingBalance);
+            let payee3StartingBalance = ethers.utils.formatEther(await provider.getBalance(payee3.address));
+            console.log("payee3 ",payee3StartingBalance);
 
 
-            await minter.connect(addr3).mint(1,{value: ethers.utils.parseEther("2")});
+            await minter.connect(user3).mint(1,{value: ethers.utils.parseEther("2")});
             console.log("mint: 2 eth sent");
             
-            let pay2EndingBalance = ethers.utils.formatEther(await provider.getBalance(user3.address));
-            console.log("user3 ",pay2EndingBalance);
+            let payee1EndingBalance = ethers.utils.formatEther(await provider.getBalance(payee1.address));
+            console.log("payee1 ",payee1EndingBalance);
             
 
-            let pay1EndingBalance = ethers.utils.formatEther(await provider.getBalance(user2.address));
-            console.log("user2 ",pay1EndingBalance);
+            let payee2EndingBalance = ethers.utils.formatEther(await provider.getBalance(payee2.address));
+            console.log("payee2 ",payee2EndingBalance);
             
-            let endingBalance = ethers.utils.formatEther(await provider.getBalance(deployer.address));
-            console.log("deployer ",endingBalance);
-            expect(endingBalance-startingBalance).to.be.equal(0.5);
+            let payee3EndingBalance = ethers.utils.formatEther(await provider.getBalance(payee3.address));
+            console.log("payee3 ",payee3EndingBalance);
+            expect(payee1EndingBalance-payee1StartingBalance).to.be.equal(0.5);
         })
+
         it("Should set stats correctly on mint", async() => {//not 100% sure how to test this one but the stats log correctly
             await minter.connect(user2).mint(1,{value: ethers.utils.parseEther("2")});
-            console.log(await minter.connect(user2).getStats(6));
+            console.log(await minter.connect(user2).raptorStats(4));
         })
         
         it("Should return the correct tokens owned by a wallet", async() => {
-            await minter.connect(user2).mint(1, {value: ethers.utils.parseEther("2")});
-            let tokenIDs = await minter.connect(user2).walletOfOwner(user2.address);
-            expect(tokenIDs[0]).to.be.equal(6);
-        })
-        
-        it("Should not allow the admin to update stats", async() => {
-            await minter.connect(deployer).mint(1);
-            expect(minter.connect(deployer).updateStats(newStats, 6)).to.be.revertedWith("Err: GC");
-        })
-        
-        it("Should not allow a different wallet to update the stats", async() => {
-            await minter.connect(user2).mint(1, {value: ethers.utils.parseEther("2")});
-            expect(minter.connect(user2).updateStats(newStats, 6)).to.be.revertedWith("Err: GC");
-        })
+            await minter.connect(user3).mint(1, {value: ethers.utils.parseEther("2")});
+            let tokenIDs = await minter.connect(user3).walletOfOwner(user3.address);
+            console.log(tokenIDs);
+            expect(tokenIDs[0]).to.be.equal(4);
+        })    
         
         it("Should reward V1 holders correctly", async() => {
-            let tokenId = await minter.connect(addr7).walletOfOwner(addr7.address);
-            expect(tokenId[0]).to.be.equal(1)
+            let tokenIDs = await minter.connect(user2).walletOfOwner(user2.address);
+            expect(tokenIDs[0]).to.be.equal(1)
         })
         
         it("Should give the correct price from getPrice", async() => {
