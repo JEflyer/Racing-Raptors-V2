@@ -1,5 +1,6 @@
 const {expect} = require("chai");
-const {ethers, waffle} = require("hardhat");
+const {ethers, getChainId, deployments} = require("hardhat");
+const {config, autoFundCheck} = require("../config/chainlink.config.js");
 
 //minter constructor vars
 const baseUri = "This is the uri/";
@@ -17,14 +18,18 @@ const DRFee = 100;
 let minter;
 let game;
 
-let owner,  addr1, addr2, addr3, addr4, addr5, addr6, addr7, addr8, addr9;
-let pay1, pay2, pay3;
+let owner, user2, user3, payee1, payee2, payee3, addr6, addr7, addr8, addr9;
 let provider;
 
 let _vrfCoordinator;
 let _linkToken;
 let _keyHash;
 let _OracleFee;
+
+let linkToken;
+let LinkToken;
+let chainId;
+
 
 let newStats = {
     speed: 2,
@@ -40,38 +45,19 @@ let newStats = {
 describe("Contract Testing", () => {
     beforeEach(async () => {
         provider = ethers.provider;
-        [owner, addr1, addr2, addr3, addr4, addr5, addr6, addr7, addr8, addr9] = await ethers.getSigners();
-    
-        const Minter = await ethers.getContractFactory("Minter");
-        const Game = await ethers.getContractFactory("Game");
-    
-        //for minter constructor
-        const rewardedAddresses = [addr7.address, addr8.address, addr9.address];
-        const paymentsTo = [owner.address, addr1.address, addr2.address];
+        [owner, user2, user3, payee1, payee2, payee3, addr6, addr7, addr8, addr9] = await ethers.getSigners();
+        
+        chainId = await getChainId();
+        await deployments.fixture(["main"]);
+        LinkToken = await deployments.get("LinkToken");
+        linkToken = await ethers.getContractAt("LinkToken", LinkToken.address);
+        M
 
-        
-        minter = await Minter.deploy(
-            rewardedAddresses,
-            paymentsTo,
-            _vrfCoordinator,
-            _linkToken,
-            _keyHash,
-            _OracleFee
-        );
-        
-        
-        //for game constructor
-        // const communityWallet = addr6.address;
-        // const minterAddress = minter.address;
-        
-    
-        // game = await Game.deploy(
-        //     minterAddress,
-        //     communityWallet,
-        //     QPFee,
-        //     CompFee,
-        //     DRFee
-        // );
+        const Minter = await deployments.get("Minter");
+        minter = await ethers.getContractAt("Minter", Minter.address);
+
+        const Game = await deployments.get("Game");
+        game = await ethers.getContractAt("Game", Game.address);
     })
 
 describe("Testing Minter Contract", () => {

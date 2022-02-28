@@ -1,4 +1,5 @@
 const {config} = require("../config/chainlink.config.js");
+const fs = require("fs");
 
 module.exports = async({getNamedAccounts, deployments, getChainId, ethers}) => {
     const {deploy, get, log} = deployments;
@@ -13,8 +14,10 @@ module.exports = async({getNamedAccounts, deployments, getChainId, ethers}) => {
     let fee;
     let rewardedAddresses;
     let paymentsTo;
+    let communityWallet;
 
     if(chainId == 31337) {
+        communityWallet = user3;
         rewardedAddresses = [user2]
         paymentsTo = [
             payee1,
@@ -22,26 +25,19 @@ module.exports = async({getNamedAccounts, deployments, getChainId, ethers}) => {
             payee3,
         ];
 
-        log(payee1);
-        log(payee2);
-        log(payee3);
-
         linkToken = await get("LinkToken");
         VRFCoordinatorMock = await get("VRFCoordinatorMock");
         linkTokenAddress = linkToken.address;
-        vrfCoordinatorAddress = VRFCoordinatorMock.address;
-
-        log(linkTokenAddress);
-        log(vrfCoordinatorAddress);
-        
+        vrfCoordinatorAddress = VRFCoordinatorMock.address;        
         additionalMessage = " --linkAddress " + linkTokenAddress + " --fundamount " + config[chainId].fundAmount;
     }else {
         linkTokenAddress = config[chainId].linkToken;
         vrfCoordinatorAddress = config[chainId].vrfCoordinator;
     }
 
-    keyHash = config[chainId].linkToken;
+    keyHash = config[chainId].keyHash;
     fee = config[chainId].fee;
+
 
     const minter = await deploy("Minter", {
         from: deployer,
@@ -56,7 +52,24 @@ module.exports = async({getNamedAccounts, deployments, getChainId, ethers}) => {
         log: true,
     });
 
-    log("Run the following command to fund contract with LINK:");
+    const game = await deploy("Game", {
+        from: deployer,
+        args: [
+            minter.address,
+            communityWallet,
+            ethers.utils.parseUnits("1", 18),
+            vrfCoordinatorAddress,
+            linkTokenAddress,
+            keyHash,
+            ethers.utils.parseUnits(fee, 18),
+            1000,
+        ],
+        log: true,
+    });
+
+
+
+    log("Run the following command to fund minter contract with LINK:");
     log(
         "npx hardhat fund-link --contract " +
         minter.address +
@@ -65,4 +78,13 @@ module.exports = async({getNamedAccounts, deployments, getChainId, ethers}) => {
         additionalMessage
     );
     log("-------------------------------------------------------");
+    log("Run the following command to fund game contract with LINK:");
+    log(
+        "npx hardhat fund-link --contract " +
+        game.address +
+        " --network " +
+        config[chainId].name +
+        additionalMessage
+    );
+
 };
