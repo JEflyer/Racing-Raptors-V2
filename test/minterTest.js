@@ -18,7 +18,7 @@ const DRFee = 100;
 let minter;
 let game;
 
-let owner, user2, user3, payee1, payee2, payee3, addr6, addr7, addr8, addr9;
+let deployer, user2, user3, payee1, payee2, payee3, addr6, addr7, addr8, addr9;
 let provider;
 
 let _vrfCoordinator;
@@ -29,7 +29,8 @@ let _OracleFee;
 let linkToken;
 let LinkToken;
 let chainId;
-
+let Game;
+let Minter;
 
 let newStats = {
     speed: 2,
@@ -45,220 +46,220 @@ let newStats = {
 describe("Contract Testing", () => {
     beforeEach(async () => {
         provider = ethers.provider;
-        [owner, user2, user3, payee1, payee2, payee3, addr6, addr7, addr8, addr9] = await ethers.getSigners();
+        [deployer, user2, user3, payee1, payee2, payee3, addr6, addr7, addr8, addr9] = await ethers.getSigners();
         
         chainId = await getChainId();
         await deployments.fixture(["main"]);
         LinkToken = await deployments.get("LinkToken");
         linkToken = await ethers.getContractAt("LinkToken", LinkToken.address);
-        M
 
-        const Minter = await deployments.get("Minter");
+        Minter = await deployments.get("Minter");
         minter = await ethers.getContractAt("Minter", Minter.address);
 
-        const Game = await deployments.get("Game");
+        Game = await deployments.get("Game");
         game = await ethers.getContractAt("Game", Game.address);
     })
 
-describe("Testing Minter Contract", () => {
-    
-    //--------------------------COMPLETELY-WORKING-------------------------------//
-    it("Should allow the setting of the game contract", async() => {
-        await minter.connect(owner).updateGameAddress(game.address);
-        expect(await minter.gameAddress()).to.be.equal(game.address);
-    })
-    
-    it("Should not allow the setting of the game contract from a different wallet", async() => {
-        await expect(minter.connect(addr1).updateGameAddress(game.address)).to.be.revertedWith("Only A");
-    })
-    
-    it("Should update a paymentTo address", async() => {
-        await minter.connect(owner).updatePaymentTo(addr1.address, 2);
-        expect(await minter.paymentsTo(2)).to.be.equal(addr1.address);
-    })
-    
-    it("Should get the correct price for the first 10", async() => {
-        expect(await minter.getPrice(10)).to.be.equal(ethers.utils.parseEther("20"));    
-    })
-    
-    it("Should get the correct price for 10 mints, 5 before price increase 5 after price increase", async() => { // 5 mints are already minted as placeholder rewards for V1 holders
-        for (let i = 0; i < 99; i++){
-            await minter.connect(owner).mint(10);
-        }
-        expect(await minter.getPrice(10)).to.be.equal(ethers.utils.parseEther("30"));
-    })
-    
-    it("Should return the correct total minted amount", async() => {
-        expect(await minter.getTotalMinted()).to.be.equal(5);
-    })
-    
-    it("Should allow the admin to unreveal the NFT images", async() => {
-        await minter.connect(owner).reveal();
-        expect(await minter.revealed()).to.be.true;
-    })
-    
-    it("Should not allow a different wallet to unreveal the NFT images", async() => {
-        expect( minter.connect(addr1).reveal()).to.be.revertedWith("Only A");
-    })
-     
-    it("Should allow the admin to flip sale state", async() => {
-        await minter.connect(owner).flipSaleState();
-        expect(await minter.active()).to.be.false;  
-    })
-      
-    it("Should not allow a different wallet to flip sale state", async() => {
-        expect(minter.connect(addr1).flipSaleState()).to.be.revertedWith("Only A");
-    })
-    
-    it("Should allow the admin to change the admin address", async() => {
-        await minter.connect(owner).setAdmin(addr1.address);
-        expect(await minter.admin()).to.be.equal(addr1.address);
-    })
-     
-    it("Should not allow a different wallet to change the admin", async() => {
-        expect(minter.connect(addr1).setAdmin(addr1.address)).to.be.revertedWith("Only A");
-    })
-    
-    it("Should split funds correctly if funds are sent to the contract", async() => {
-        let startingBalance = ethers.utils.formatEther(await provider.getBalance(owner.address));
-        console.log("owner ",startingBalance);
-
-        let pay1StartingBalance = ethers.utils.formatEther(await provider.getBalance(addr1.address));
-        console.log("addr1 ",pay1StartingBalance);
-
-        let pay2StartingBalance = ethers.utils.formatEther(await provider.getBalance(addr2.address));
-        console.log("addr2 ",pay2StartingBalance);
-
-
-        await minter.connect(addr5).mint(1,{value: ethers.utils.parseEther("2")});
-        console.log("mint: 2 eth sent");
+    describe("Testing Minter Contract", () => {
         
-        let pay2EndingBalance = ethers.utils.formatEther(await provider.getBalance(addr2.address));
-        console.log("addr2 ",pay2EndingBalance);
+        //--------------------------COMPLETELY-WORKING-------------------------------//
+        it("Should allow the setting of the game contract", async() => {
+            await minter.connect(deployer).updateGameAddress(Game.address);
+            expect(await minter.gameAddress()).to.be.equal(Game.address);
+        })
         
+        it("Should not allow the setting of the game contract from a different wallet", async() => {
+            await expect(minter.connect(user2).updateGameAddress(game.address)).to.be.revertedWith("Err: A");
+        })
+        
+        it("Should update a paymentTo address", async() => {
+            await minter.connect(deployer).updatePaymentTo(user2.address, 2);
+            expect(await minter.paymentsTo(2)).to.be.equal(user2.address);
+        })
+        
+        it("Should get the correct price for the first 10", async() => {
+            expect(await minter.getPrice(10)).to.be.equal(ethers.utils.parseEther("20"));    
+        })
+        
+        it("Should get the correct price for 10 mints, 5 before price increase 5 after price increase", async() => { // 5 mints are already minted as placeholder rewards for V1 holders
+            for (let i = 0; i < 99; i++){
+                await minter.connect(deployer).mint(10);
+            }
+            await minter.connect(deployer).mint(2);
+            expect(await minter.getPrice(10)).to.be.equal(ethers.utils.parseEther("30"));
+        })
+        
+        it("Should return the correct total minted amount", async() => {
+            expect(await minter.totalMintSupply()).to.be.equal(3);
+        })
+        
+        it("Should allow the admin to unreveal the NFT images", async() => {
+            await minter.connect(deployer).reveal();
+            expect(await minter.revealed()).to.be.true;
+        })
+        
+        it("Should not allow a different wallet to unreveal the NFT images", async() => {
+            expect( minter.connect(user2).reveal()).to.be.revertedWith("Err: A");
+        })
+        
+        it("Should allow the admin to flip sale state", async() => {
+            await minter.connect(deployer).flipSaleState();
+            expect(await minter.active()).to.be.false;  
+        })
+        
+        it("Should not allow a different wallet to flip sale state", async() => {
+            expect(minter.connect(user2).flipSaleState()).to.be.revertedWith("Err: A");
+        })
+        
+        it("Should allow the admin to change the admin address", async() => {
+            await minter.connect(deployer).setAdmin(user2.address);
+            expect(await minter.admin()).to.be.equal(user2.address);
+        })
+        
+        it("Should not allow a different wallet to change the admin", async() => {
+            expect(minter.connect(user2).setAdmin(user2.address)).to.be.revertedWith("Err: A");
+        })
+        
+        it("Should split funds correctly if funds are sent to the contract", async() => {
+            let startingBalance = ethers.utils.formatEther(await provider.getBalance(deployer.address));
+            console.log("deployer ",startingBalance);
 
-        let pay1EndingBalance = ethers.utils.formatEther(await provider.getBalance(addr1.address));
-        console.log("addr1 ",pay1EndingBalance);
-        
-        let endingBalance = ethers.utils.formatEther(await provider.getBalance(owner.address));
-        console.log("owner ",endingBalance);
-        expect(endingBalance-startingBalance).to.be.equal(0.5);
-    })
-    it("Should set stats correctly on mint", async() => {//not 100% sure how to test this one but the stats log correctly
-        await minter.connect(addr1).mint(1,{value: ethers.utils.parseEther("2")});
-        console.log(await minter.connect(addr1).getStats(6));
-    })
-    
-    it("Should return the correct tokens owned by a wallet", async() => {
-        await minter.connect(addr1).mint(1, {value: ethers.utils.parseEther("2")});
-        let tokenIDs = await minter.connect(addr1).walletOfOwner(addr1.address);
-        expect(tokenIDs[0]).to.be.equal(6);
-    })
-    
-    it("Should not allow the admin to update stats", async() => {
-        await minter.connect(owner).mint(1);
-        expect(minter.connect(owner).updateStats(newStats, 6)).to.be.revertedWith("only GC");
-    })
-    
-    it("Should not allow a different wallet to update the stats", async() => {
-        await minter.connect(addr1).mint(1, {value: ethers.utils.parseEther("2")});
-        expect(minter.connect(addr1).updateStats(newStats, 6)).to.be.revertedWith("only GC");
-    })
-    
-    it("Should reward V1 holders correctly", async() => {
-        let tokenId = await minter.connect(addr7).walletOfOwner(addr7.address);
-        expect(tokenId[0]).to.be.equal(1)
-    })
-    
-    it("Should give the correct price from getPrice", async() => {
-        let price = await minter.getPrice(2);
-        expect(price).to.be.equal(ethers.utils.parseEther("4"));
-    })
-    
-})
+            let pay1StartingBalance = ethers.utils.formatEther(await provider.getBalance(user2.address));
+            console.log("user2 ",pay1StartingBalance);
+
+            let pay2StartingBalance = ethers.utils.formatEther(await provider.getBalance(user3.address));
+            console.log("user3 ",pay2StartingBalance);
 
 
-// describe("Testing Game Contract", () => {
-//     beforeEach(async()=> {
-//         minter.updateGameAddress.connect(owner)(game.address);
-//     })
-//     it("Should allow a user to enter their raptor into the race", async() => {
+            await minter.connect(addr3).mint(1,{value: ethers.utils.parseEther("2")});
+            console.log("mint: 2 eth sent");
+            
+            let pay2EndingBalance = ethers.utils.formatEther(await provider.getBalance(user3.address));
+            console.log("user3 ",pay2EndingBalance);
+            
 
-//     })
-//     it("Should allow the admin to set a race", async() => {
+            let pay1EndingBalance = ethers.utils.formatEther(await provider.getBalance(user2.address));
+            console.log("user2 ",pay1EndingBalance);
+            
+            let endingBalance = ethers.utils.formatEther(await provider.getBalance(deployer.address));
+            console.log("deployer ",endingBalance);
+            expect(endingBalance-startingBalance).to.be.equal(0.5);
+        })
+        it("Should set stats correctly on mint", async() => {//not 100% sure how to test this one but the stats log correctly
+            await minter.connect(user2).mint(1,{value: ethers.utils.parseEther("2")});
+            console.log(await minter.connect(user2).getStats(6));
+        })
         
-//     })
-//     it("Should complete a QP race", async() => {
+        it("Should return the correct tokens owned by a wallet", async() => {
+            await minter.connect(user2).mint(1, {value: ethers.utils.parseEther("2")});
+            let tokenIDs = await minter.connect(user2).walletOfOwner(user2.address);
+            expect(tokenIDs[0]).to.be.equal(6);
+        })
         
-//     })
-//     it("Should complete a Comp race", async() => {
+        it("Should not allow the admin to update stats", async() => {
+            await minter.connect(deployer).mint(1);
+            expect(minter.connect(deployer).updateStats(newStats, 6)).to.be.revertedWith("Err: GC");
+        })
         
-//     })
-//     it("Should complete a DR race", async() => {
+        it("Should not allow a different wallet to update the stats", async() => {
+            await minter.connect(user2).mint(1, {value: ethers.utils.parseEther("2")});
+            expect(minter.connect(user2).updateStats(newStats, 6)).to.be.revertedWith("Err: GC");
+        })
         
-//     })
-//     it("Should payout correctly on a QP race", async() => {
+        it("Should reward V1 holders correctly", async() => {
+            let tokenId = await minter.connect(addr7).walletOfOwner(addr7.address);
+            expect(tokenId[0]).to.be.equal(1)
+        })
         
-//     })
-//     it("Should payout correctly on a Comp race", async() => {
-
-//     })
-//     it("Should payout correctly on a DR race", async() => {
-
-//     })
-//     it("Should return the current race queue", async() => {
-
-//     })
-//     it("Should give the correct current race", async() => {
+        it("Should give the correct price from getPrice", async() => {
+            let price = await minter.getPrice(2);
+            expect(price).to.be.equal(ethers.utils.parseEther("4"));
+        })
         
-//     })
-//     it("Should not allow a wallet other than the admin to start a race", async() => {
-        
-//     })
-//     it("Should not allow a ERC721 token to be sent to the contract", async() => {
-        
-//     })
-//     it("Should emit an event when a QP race starts", async() => {
-        
-//     })
-//     it("Should emit an event when a Comp race starts", async() => {
-        
-//     })
-//     it("Should emit an event when a DR race starts", async() => {
-        
-//     })
-//     it("Should generate psuedorandom numbers from the random number provided by ", async() => {
-        
-//     })
-//     it("Should ", async() => {
-        
-//     })
-// })
+    })
 
 
+    // describe("Testing Game Contract", () => {
+    //     beforeEach(async()=> {
+    //         minter.updateGameAddress.connect(deployer)(game.address);
+    //     })
+    //     it("Should allow a user to enter their raptor into the race", async() => {
 
-// describe("Testing Minter/Game Contract Interaction", () => {
-//     beforeEach(async()=> {
-//         minter.updateGameAddress.connect(owner)(game.address);
-//     })
-//     it("Should ", async() => {
+    //     })
+    //     it("Should allow the admin to set a race", async() => {
+            
+    //     })
+    //     it("Should complete a QP race", async() => {
+            
+    //     })
+    //     it("Should complete a Comp race", async() => {
+            
+    //     })
+    //     it("Should complete a DR race", async() => {
+            
+    //     })
+    //     it("Should payout correctly on a QP race", async() => {
+            
+    //     })
+    //     it("Should payout correctly on a Comp race", async() => {
 
-//     })
-//     it("Should ", async() => {
-        
-//     })
-//     it("Should ", async() => {
-        
-//     })
-//     it("Should ", async() => {
-        
-//     })
-//     it("Should ", async() => {
-        
-//     })
-//     it("Should ", async() => {
-        
-//     })
-// })
+    //     })
+    //     it("Should payout correctly on a DR race", async() => {
 
-})
+    //     })
+    //     it("Should return the current race queue", async() => {
+
+    //     })
+    //     it("Should give the correct current race", async() => {
+            
+    //     })
+    //     it("Should not allow a wallet other than the admin to start a race", async() => {
+            
+    //     })
+    //     it("Should not allow a ERC721 token to be sent to the contract", async() => {
+            
+    //     })
+    //     it("Should emit an event when a QP race starts", async() => {
+            
+    //     })
+    //     it("Should emit an event when a Comp race starts", async() => {
+            
+    //     })
+    //     it("Should emit an event when a DR race starts", async() => {
+            
+    //     })
+    //     it("Should generate psuedorandom numbers from the random number provided by ", async() => {
+            
+    //     })
+    //     it("Should ", async() => {
+            
+    //     })
+    // })
+
+
+
+    // describe("Testing Minter/Game Contract Interaction", () => {
+    //     beforeEach(async()=> {
+    //         minter.updateGameAddress.connect(deployer)(game.address);
+    //     })
+    //     it("Should ", async() => {
+
+    //     })
+    //     it("Should ", async() => {
+            
+    //     })
+    //     it("Should ", async() => {
+            
+    //     })
+    //     it("Should ", async() => {
+            
+    //     })
+    //     it("Should ", async() => {
+            
+    //     })
+    //     it("Should ", async() => {
+            
+    //     })
+    // })
+
+});

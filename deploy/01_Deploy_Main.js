@@ -52,6 +52,8 @@ module.exports = async({getNamedAccounts, deployments, getChainId, ethers}) => {
         log: true,
     });
 
+    await minter.wait;
+
     const game = await deploy("Game", {
         from: deployer,
         args: [
@@ -67,6 +69,7 @@ module.exports = async({getNamedAccounts, deployments, getChainId, ethers}) => {
         log: true,
     });
 
+    await game.wait;
 
 
     log("Run the following command to fund minter contract with LINK:");
@@ -88,3 +91,5 @@ module.exports = async({getNamedAccounts, deployments, getChainId, ethers}) => {
     );
 
 };
+
+module.exports.tags = ["all", "main"];
