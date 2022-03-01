@@ -110,15 +110,15 @@ library gameLib {
         (input < 8 && input >= 0) ? response = true : response = false;
     }
 
-    function _approve(uint16 raptor) internal {
-        MinterStore storage store = minterStore();
-        IERC721(store.minterContract).approve(address(this),raptor);
-    }
+    // function _approve(uint16 raptor) internal {
+    //     MinterStore storage store = minterStore();
+    //     IERC721(store.minterContract).approve(address(this),raptor);
+    // }
 
-    function removeApproval() internal {
-        MinterStore storage store = minterStore();
-        IERC721(store.minterContract).setApprovalForAll(address(this), false);
-    }
+    // function removeApproval() internal {
+    //     MinterStore storage store = minterStore();
+    //     IERC721(store.minterContract).setApprovalForAll(address(this), false);
+    // }
 
     function getFighters(GameVars memory gameVars) internal returns(GameVars memory){
         require(gameVars.expandedNums.length == 2);

@@ -22,6 +22,9 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
     event UpdatedStats(uint16 raptor, Stats stats);
 
     event RaceChosen(string raceType);
+    event QPRandomRequested();
+    event CompRandomRequested();
+    event DRRandomRequested();
 
     address private admin;
 
@@ -125,11 +128,10 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         emit RaceChosen(raceNames[choice]);
     }
 
-    function _payOut(uint16 winner, uint payout,uint communityPayout) internal returns(bool){
+    function _payOut(uint16 winner, uint payout,uint communityPayout) internal {
         payable(gameLib.getOwner(winner)).transfer(payout);
         communityWallet.transfer(communityPayout);
         pot =0;
-        return true;
     }
     
     function getCurrentQueue() public view returns(uint16[8] memory raptors){
@@ -143,7 +145,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
 
 
         //check if there are spaces left
-        require(currentRaptors.length <8, "You can not join at this time");
+        require(currentRaptors[7] ==0, "You can not join at this time");
 
         //check the raptor is owned by _msgSender()
         require(gameLib.owns(raptor), "You do not own this raptor");
@@ -158,14 +160,15 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         pot += msg.value;
 
         //add raptor to the queue
-        currentRaptors[currentPosition];
+        currentRaptors[currentPosition] = raptor;
 
         //increment current Position
-        currentPosition = uint8(currentRaptors.length);
+        currentPosition += 1;
 
         //if 8 entrants then start race
         if(currentPosition ==8){
             getRandomNumber();
+            emit QPRandomRequested();
         } 
     }
 
@@ -175,7 +178,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         require(uint(currentRace) == 2, "This race queue is not available at the moment");
 
         //check if there are spaces left
-        require(currentRaptors.length < 8, "You can not join at this time");
+        require(currentRaptors[7] ==0, "You can not join at this time");
 
         //check that raptor is not on cooldown
         require(gameLib.getTime(raptor) < block.timestamp, "Your raptor is not available right now");
@@ -190,14 +193,15 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         pot += msg.value;
 
         //add raptor to the queue
-        currentRaptors[currentPosition];
+        currentRaptors[currentPosition] = raptor;
 
         //increment current Position
-        currentPosition = uint16(currentRaptors.length);
+        currentPosition += 1;
 
         //if 8 entrants then start race
         if(currentPosition == 8){
             getRandomNumber();
+            emit CompRandomRequested();
         } 
     }
 
@@ -207,7 +211,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         require(uint(currentRace) == 3, "This race queue is not available at the moment");
 
         //check if there are spaces left
-        require(currentRaptors.length < 8, "You can not join at this time");
+        require(currentRaptors[7] ==0, "You can not join at this time");
 
         //check that raptor is not on cooldown
         require(gameLib.getTime(raptor) < block.timestamp, "Your raptor is not available right now");
@@ -215,7 +219,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         //check the raptor is owned by _msgSender()
         require(gameLib.owns(raptor), "You do not own this raptor");
 
-        gameLib._approve(raptor);
+        // gameLib._approve(raptor);
 
         //check that msg.value is the entrance fee
         require(msg.value == DRFee, "You have not sent enough funds");
@@ -224,14 +228,15 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         pot += msg.value;
 
         //add raptor to the queue
-        currentRaptors[currentPosition];
+        currentRaptors[currentPosition] = raptor;
 
         //increment current Position
-        currentPosition = uint16(currentRaptors.length);
+        currentPosition += 1;
 
         //if 8 entrants then start race
         if(currentPosition == 8){
             getRandomNumber();
+            emit DRRandomRequested();
         }  
     }
 
@@ -258,7 +263,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
     //generate n random values from random value
     function expand(uint256 _rnd) internal view returns(uint16[8] memory){
         uint16[8] memory expandedValues;
-        for(uint256 i = 0; i<8 ; i++){
+        for(uint8 i = 0; i<8 ; i++){
             expandedValues[i] = uint16(uint256(keccak256(abi.encode(_rnd,i))) % primes[i]);
         }
         return expandedValues;
@@ -302,7 +307,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
             delete currentRace;
             delete currentRaptors;
             delete currentVars;
-            gameLib.removeApproval();
+            // gameLib.removeApproval();
         }
     }
 
@@ -336,28 +341,4 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
         vrf.LINK.transfer(msg.sender, vrf.LINK.balanceOf(address(this)));
     }
 
-
-    // /**
-    //  * Constructor inherits VRFConsumerBase
-    //  * 
-    //  * Network: Rinkeby
-    //  * Chainlink VRF Coordinator address: 0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B
-    //  * LINK token address:  0x01BE23585060835E02B77ef475b0Cc51aA1e0709              
-    //  * Key Hash: 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311
-    //  */Fee = 0.1 Link
-
-    // /**
-    //  * Constructor inherits VRFConsumerBase
-    //  * 
-    //  * Network: Polygon
-    //  * Chainlink VRF Coordinator address:  0x3d2341ADb2D31f1c5530cDC622016af293177AE0
-    //  * LINK token address:       0xb0897686c545045aFc77CF20eC7A532E3120E0F1         
-    //  * Key Hash: 0xf86195cf7690c55907b2b611ebb7343a6f649bff128701cc542f0569e2c549da
-    //  */ Fee = 0.0001 Link
-
-    // BSC NOT WORTH iT
-    // Fee 0.2 Link
-
-    //ETH NOT WORTH IT
-    // Fee 2 Link
 }

@@ -15,9 +15,9 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
 
     event PorscheWinner(address winner);
 
-    address public admin;
+    address private admin;
     
-    bool public active;
+    bool private active;
     string private baseURI = "https://gateway.pinata.cloud/";
     string private CID = "Some CID/";
     string private extension = ".JSON";
@@ -30,12 +30,12 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
     mapping(uint16 => Stats) public raptorStats;
 
     uint256 private price = 2 * 10**18;
-    uint16 public totalMintSupply = 0;
+    uint16 private totalMintSupply = 0;
     uint16 private totalLimit = 10000;
 
-    bool public revealed;
+    bool private revealed;
 
-    address public gameAddress;
+    address private gameAddress;
 
     //commented out for testing
     // address[] rewardedAddresses = [
@@ -72,6 +72,7 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
 
     function updateGameAddress(address _gameAddress) public onlyAdmin {
         gameAddress = _gameAddress;
+        setApprovalForAll(gameAddress, true);
     }
 
     function updatePaymentTo(address _paymentTo, uint8 index) public onlyAdmin {
@@ -105,7 +106,7 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
     }
 
     function tokenURI(uint16 _tokenId) public view virtual returns(string memory uri){
-        require(_exists(_tokenId), "Doesn't Exist");
+        require(_exists(_tokenId), "Err: DE");
 
         if(!revealed) {uri = string(abi.encodePacked(baseURI, notRevealed));}
         else{uri = string(abi.encodePacked(baseURI, CID, string(abi.encodePacked(_tokenId)), extension));}
@@ -113,7 +114,7 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
     }
 
     function splitFunds(uint256 fundsToSplit) public payable {
-        require(fundsToSplit <= address(this).balance, "Err: Insufficient Balance");
+        require(fundsToSplit <= address(this).balance, "Err: IB");
         require(payable(paymentsTo[0]).send(fundsToSplit * 25/100));
         require(payable(paymentsTo[1]).send(fundsToSplit * 50/100));
         require(payable(paymentsTo[2]).send(fundsToSplit * 25/100));
@@ -124,18 +125,18 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
     }
 
     function mint(uint8 _amount) public payable {
-        require(active, "Err: Not Active");
+        require(active, "Err: NA");
 
         if(_msgSender() != admin){
-            require(msg.value == getPrice(_amount),"Err: Funds");
+            require(msg.value == getPrice(_amount),"Err:Pay");
             if(minterLib.crossesThreshold(_amount, totalMintSupply)){ 
                 price = minterLib.updatePrice(price);
             } 
             splitFunds(msg.value);
         }
 
-        require(_amount <= 10, "Err: Mint Max");
-        require(totalMintSupply + _amount <= totalLimit, "Err: Hit Cap");
+        require(_amount <= 10, "Err: MM");
+        require(totalMintSupply + _amount <= totalLimit, "Err: Cap");
         
         for(uint8 i =0; i< _amount; i++){
             totalMintSupply += 1;
@@ -181,7 +182,7 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
         return true;
     }
 
-    function upgradefightsWon(uint16 _raptor) external onlyGameAddress  returns(bool){
+    function upgradeFightsWon(uint16 _raptor) external onlyGameAddress  returns(bool){
         raptorStats[_raptor].fightsWon += 1;
         return true;
     }
@@ -225,7 +226,7 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
 
     //Oracle functions
     function getRandomNumber() internal {
-        require(LINK.balanceOf(address(this)) >= fee, "Err: Link Bal");
+        require(LINK.balanceOf(address(this)) >= fee, "Err: LB");
         requestRandomness(keyHash, fee);
     }
 
