@@ -148,7 +148,7 @@ contract GameV3 is IERC721Receiver, Context, VRFConsumerBase{
     }    
 
     modifier onlyAdmin {
-        require(msg.sender == admin, "You can not call this function");
+        require(_msgSender() == admin, "You can not call this function");
         _;
     }
 
