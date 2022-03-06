@@ -11,7 +11,7 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
-contract Minter is ERC721Enumerable, VRFConsumerBase {
+contract MinterV3 is ERC721Enumerable, VRFConsumerBase{
 
     event PorscheWinner(address winner);
 
@@ -23,9 +23,9 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
     string private extension = ".JSON";
     string private notRevealed = "NotRevealed Hash";
 
-    bytes32 lastRequestId;
-    bytes32 keyHash;
-    uint256 fee;
+    bytes32 private lastRequestId;
+    bytes32 private keyHash;
+    uint256 private fee;
 
     mapping(uint16 => Stats) public raptorStats;
 
@@ -36,6 +36,7 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
     bool private revealed;
 
     address private gameAddress;
+    address private cooldownContract;
 
     //commented out for testing
     // address[] rewardedAddresses = [
@@ -43,15 +44,15 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
 
     // ];
 
-    address[] rewardedAddresses;
+    address[] private rewardedAddresses;
 
-    uint8[] rewardedAmounts = [
-        3
+    uint8[] private rewardedAmounts = [
+        1,1,1,1,1,1,1,1
     ];
 
-    address[] public paymentsTo;
+    address[] private paymentsTo;
 
-    mapping(uint16 => bool) public foundingRaptor;
+    mapping(uint16 => bool) private foundingRaptor;
 
     constructor(
         address[] memory _rewardedAddresses,
@@ -71,25 +72,30 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
     }
 
     function updateGameAddress(address _gameAddress) public onlyAdmin {
+        setApprovalForAll(gameAddress, false);
         gameAddress = _gameAddress;
         setApprovalForAll(gameAddress, true);
+    }
+
+    function updateCooldownAddress(address _coolDown) public onlyAdmin {
+        cooldownContract = _coolDown;
     }
 
     function updatePaymentTo(address _paymentTo, uint8 index) public onlyAdmin {
         paymentsTo[index] = _paymentTo;
     }
 
-    function getPrice(uint8 _amount) public view  returns(uint256 givenPrice){
+    function getPrice(uint8 _amount) public view  returns(uint256){
         return minterLib.getPrice(_amount, price, totalMintSupply);
     }
 
     modifier onlyAdmin{
-        require(_msgSender() == admin, "Err: A");
+        require(_msgSender() == admin);
         _;
     }
 
     modifier onlyGameAddress{
-        require(_msgSender() == gameAddress, "Err: GC");
+        require(_msgSender() == gameAddress);
         _;
     }
 
@@ -106,7 +112,7 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
     }
 
     function tokenURI(uint16 _tokenId) public view virtual returns(string memory uri){
-        require(_exists(_tokenId), "Err: DE");
+        require(_exists(_tokenId));
 
         if(!revealed) {uri = string(abi.encodePacked(baseURI, notRevealed));}
         else{uri = string(abi.encodePacked(baseURI, CID, string(abi.encodePacked(_tokenId)), extension));}
@@ -114,7 +120,6 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
     }
 
     function splitFunds(uint256 fundsToSplit) public payable {
-        require(fundsToSplit <= address(this).balance, "Err: IB");
         require(payable(paymentsTo[0]).send(fundsToSplit * 25/100));
         require(payable(paymentsTo[1]).send(fundsToSplit * 50/100));
         require(payable(paymentsTo[2]).send(fundsToSplit * 25/100));
@@ -125,22 +130,23 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
     }
 
     function mint(uint8 _amount) public payable {
-        require(active, "Err: NA");
+        require(active);
 
         if(_msgSender() != admin){
-            require(msg.value == getPrice(_amount),"Err:Pay");
+            require(msg.value == getPrice(_amount));
             if(minterLib.crossesThreshold(_amount, totalMintSupply)){ 
                 price = minterLib.updatePrice(price);
             } 
             splitFunds(msg.value);
         }
 
-        require(_amount <= 10, "Err: MM");
-        require(totalMintSupply + _amount <= totalLimit, "Err: Cap");
+        require(_amount <= 10);
+        require(totalMintSupply + _amount <= totalLimit);
         
         for(uint8 i =0; i< _amount; i++){
             totalMintSupply += 1;
             _mint(_msgSender(), totalMintSupply);
+            approve(gameAddress, totalMintSupply);
             raptorStats[totalMintSupply] = Stats(1,1,0,0,0,0,0,uint32(block.timestamp));
             if(totalMintSupply == totalLimit) {
                 getRandomNumber();
@@ -212,6 +218,12 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
         return true;
     }
 
+    function resetCooldown(uint16 _raptor) external returns (bool) {
+        require(msg.sender == cooldownContract);
+        raptorStats[_raptor].cooldownTime = uint32(block.timestamp);
+        return true;
+    }
+
     function reward() internal {
         for(uint8 i = 0; i < rewardedAddresses.length; i++){
             for (uint8 j = 0; j < rewardedAmounts[i]; j++){
@@ -226,14 +238,18 @@ contract Minter is ERC721Enumerable, VRFConsumerBase {
 
     //Oracle functions
     function getRandomNumber() internal {
-        require(LINK.balanceOf(address(this)) >= fee, "Err: LB");
+        require(LINK.balanceOf(address(this)) >= fee);
         requestRandomness(keyHash, fee);
     }
 
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-        uint winner = randomness %10000;
-        emit PorscheWinner(ownerOf(winner));
+        emit PorscheWinner(ownerOf(randomness %10000));
     }
     //Oracle Functions
+
+    function burn(uint256 tokenId) public virtual {
+        require(_isApprovedOrOwner(_msgSender(), tokenId));
+        _burn(tokenId);
+    }
 
 }

@@ -697,8 +697,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\game.sol": {
-      "lastModificationDate": 1646095480830,
-      "contentHash": "1311a82c13a32eddb50bb75f8da2713a",
+      "lastModificationDate": 1646531098630,
+      "contentHash": "93918115122a432e8fd6d01248c6b7a3",
       "sourceName": "contracts/game.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -746,7 +746,7 @@
         "^0.8.7"
       ],
       "artifacts": [
-        "Game"
+        "GameV3"
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\interfaces\\IGame.sol": {
@@ -792,8 +792,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\interfaces\\IMinter.sol": {
-      "lastModificationDate": 1645902687732,
-      "contentHash": "4c9f3547c41822bebec7bfd4254c80ea",
+      "lastModificationDate": 1646536281640,
+      "contentHash": "17cc372f057d23a59df40dcb2f7ab9ab",
       "sourceName": "contracts/interfaces/IMinter.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -836,8 +836,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\libraries\\gameLib.sol": {
-      "lastModificationDate": 1646095213917,
-      "contentHash": "cad8b364fdc4faa5c311d2b4eaa51955",
+      "lastModificationDate": 1646536275765,
+      "contentHash": "3e1c5709c573ac2764ab87408c73f195",
       "sourceName": "contracts/libraries/gameLib.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -1262,8 +1262,8 @@
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\minter.sol": {
-      "lastModificationDate": 1646095819949,
-      "contentHash": "8017bbfd0a86cf135cdd5728f0251c9b",
+      "lastModificationDate": 1646536776281,
+      "contentHash": "b270fb7bbe1d9b354bb33b1d0444c28b",
       "sourceName": "contracts/minter.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -1306,7 +1306,7 @@
         "^0.8.7"
       ],
       "artifacts": [
-        "Minter"
+        "MinterV3"
       ]
     },
     "C:\\Users\\azureuser\\Desktop\\racing raptors contract testing\\contracts\\libraries\\minterLib.sol": {

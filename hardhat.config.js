@@ -18,12 +18,17 @@ task("accounts","Prints the list of accounts", async(taskArgs, hre) => {
 module.exports = {
   networks:{
 	  rinkeby: {
-		  url: process.env.RINEKBY_URL || "",
+		  url: process.env.RINKEBY_URL,
 		  chainId: 4,
 		  accounts: [
 			  process.env.PRIVATE_KEY_DEPLOYER,
 			  process.env.PRIVATE_KEY_USER_2,
 			  process.env.PRIVATE_KEY_USER_3,
+			  process.env.PRIVATE_KEY_USER_4,
+			  process.env.PRIVATE_KEY_USER_5,
+			  process.env.PRIVATE_KEY_USER_6,
+			  process.env.PRIVATE_KEY_USER_7,
+			  process.env.PRIVATE_KEY_USER_8,
 		  ].filter((x) => x !== undefined),
 	  },
   },
@@ -49,14 +54,24 @@ module.exports = {
 	  },
 	  payee1: {
 		  default: 3,
+		  4: 3,
 	  },
 	  payee2: {
 		  default: 4,
+		  4: 4,
 	  },
 	  payee3: {
 		  default: 5,
+		  4: 5,
 	  },
-
+	  user4:{
+		  default: 6,
+		  4: 6,
+	  },
+	  user5: {
+		  default: 7,
+		  4: 7,
+	  },
   },
   solidity: {
 	  compilers: [

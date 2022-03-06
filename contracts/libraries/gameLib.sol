@@ -25,15 +25,10 @@ library gameLib {
     event DeathRaceStarted(uint16[8] raptors);
     event DeathRaceWinner(uint16 raptor);
     event RipRaptor(uint16 raptor);
+
+    
     //-------------------------Events-------------------------------//
-
-    //-------------------------Modifiers-------------------------------//
-    modifier isTwo(uint16[] memory raptors){
-        require(raptors.length == 2, "Incorrect Amount of Raptors");
-        _;
-    }
-    //-------------------------Modifiers-------------------------------//
-
+    
     //-------------------------storage----------------------------------//
     //-------------------------minter----------------------------------//
     bytes32 constant minterSlot = keccak256("minterAddress");
@@ -90,7 +85,7 @@ library gameLib {
 
     function getOwner(uint16 raptor) internal view returns(address){
         MinterStore storage store = minterStore();
-        return IERC721(store.minterContract).ownerOf(raptor);
+        return IERC721(store.minterContract).ownerOf(uint256(raptor));
     }
 
     function checkIfFounder(uint16 raptor) internal view returns(bool){
@@ -121,10 +116,9 @@ library gameLib {
     // }
 
     function getFighters(GameVars memory gameVars) internal returns(GameVars memory){
-        require(gameVars.expandedNums.length == 2);
         
         gameVars.fighters[0] = uint8(gameVars.expandedNums[0] % 8);
-        gameVars.fighters[1] = uint8(gameVars.expandedNums[1] % 8);
+        gameVars.fighters[1] = uint8(gameVars.expandedNums[3] % 8);
 
         while(gameVars.fighters[0] == gameVars.fighters[1]){
             bool check = checkBounds(gameVars.fighters[0]);
@@ -173,7 +167,7 @@ library gameLib {
         uint8[3] memory places;
         uint8 i = 0;
         for(; i< 8; i++){
-            if(i != fighters[0] || i != fighters[1]){
+            if(i != fighters[0] && i != fighters[1]){
                 if(time[i]<lowest){
                     lowest = uint16(time[i]); 
                     places[0] = i;           
@@ -183,7 +177,7 @@ library gameLib {
         lowest = 20000;
         i = 0;
         for(; i< 8; i++){
-            if(i != fighters[0] || i != fighters[1] || i != places[0]){
+            if(i != fighters[0] && i != fighters[1] && i != places[0]){
                 if(time[i]<lowest){
                     lowest = uint16(time[i]); 
                     places[1] = i;           
@@ -193,7 +187,7 @@ library gameLib {
         lowest = 20000;
         i = 0;
         for(; i< 8; i++){
-            if(i != fighters[0] || i != fighters[1] || i != places[0] || i != places[2]){
+            if(i != fighters[0] && i != fighters[1] && i != places[0] && i != places[2]){
                 if(time[i]<lowest){
                     lowest = uint16(time[i]); 
                     places[2] = i;            
@@ -204,7 +198,7 @@ library gameLib {
     }
 
     function getWinner(GameVars memory gameVars) internal view returns(GameVars memory){
-        require(gameVars.expandedNums.length == 8);
+        require(gameVars.expandedNums.length == 8, "IRNL");
         uint8 i = 0;
         uint16[8] memory speed;
         address minter = minterStore().minterContract;
@@ -240,14 +234,14 @@ library gameLib {
         uint8 index;
         (gameVars.fightWinner == gameVars.fighters[0]) ? (index = 0) : (index = 1);
         bool success = IMinter(minter).upgradeStrength(gameVars.raptors[index], rand);
-        require(success, "Error");
+        require(success, "USt");
     }
 
     function upgradeSpeed(GameVars memory gameVars) internal {
         uint8 rand = uint8(gameVars.expandedNums[7] %3) +1;
         address minter = minterStore().minterContract;
         bool success = IMinter(minter).upgradeSpeed(gameVars.raptors[gameVars.places[0]],rand);
-        require(success, "Error");
+        require(success, "USp");
     }
                        // -------  +Vary ----------//
 
@@ -255,26 +249,26 @@ library gameLib {
     function increaseQPWins(GameVars memory gameVars) internal {
         address minter = minterStore().minterContract;
         bool success = IMinter(minter).upgradeQPWins(gameVars.raptors[gameVars.places[0]]);
-        require(success, "Error");
+        require(success, "QW");
     }
 
     function increaseCompWins(GameVars memory gameVars) internal {
         address minter = minterStore().minterContract;
         bool success = IMinter(minter).upgradeCompWins(gameVars.raptors[gameVars.places[0]]);
-        require(success, "Error");
+        require(success, "CW");
     }
 
     function increaseDeathRaceWins(GameVars memory gameVars) internal {
         address minter = minterStore().minterContract;
         bool success = IMinter(minter).upgradeDRWins(gameVars.raptors[gameVars.places[0]]);
-        require(success, "Error");
+        require(success, "DW");
     }
 
     function increaseTop3RaceFinishes(GameVars memory gameVars) internal {
         address minter = minterStore().minterContract;
         for(uint i = 0; i < 3; i++){
             bool success = IMinter(minter).upgradeTop3Finishes(gameVars.raptors[gameVars.places[i]]);
-            require(success, "Error");
+            require(success, "T3");
         }
     }
                        // -------  +1 ----------//
@@ -288,8 +282,8 @@ library gameLib {
         bool check = checkIfFounder(gameVars.raptors[index]);
         uint32 newTime;
         (check) ? (newTime = 6 hours) : (newTime = 12 hours);
-        bool success = IMinter(minter).increaseCooldownTime(gameVars.raptors[index], newTime);
-        require(success, "Error");
+        bool success = IMinter(minter).increaseCooldownTime(gameVars.raptors[gameVars.fighters[index]], newTime);
+        require(success, "CD");
     }
          // -----  +12 Hours/ Unless Founding Raptor 6 Hours -----//
     //------------------------Stat-Changes---------------------------------//
@@ -298,7 +292,7 @@ library gameLib {
 
     //QP Start
     function _quickPlayStart(GameVars memory gameVars) internal returns (uint16){
-        require(gameVars.expandedNums.length == 8);
+        require(gameVars.expandedNums.length == 8,"Err: IRL");
         emit QuickPlayRaceStarted(gameVars.raptors);
         
         //gets fighters, finds the winner & adds them to indexes to ignore for choosing winner
@@ -383,7 +377,7 @@ library gameLib {
     // //DR Kill/BURN RAPTOR
     function _kill(uint16 raptor) internal {
         MinterStore storage store = minterStore();
-        IERC721(store.minterContract).safeTransferFrom(getOwner(raptor),address(0),raptor);
+        IMinter(store.minterContract).burn(uint256(raptor));
     }
 
     function handleDRStats(GameVars memory gameVars) internal {

@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "@appliedblockchain/chainlink-plugins-fund-link": "^0.0.3",
-    "@nomiclabs/hardhat-etherscan": "^3.0.1",
+    "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "dotenv": "^16.0.0",
     "hardhat": "^2.8.4",
     "hardhat-contract-sizer": "^2.5.0",

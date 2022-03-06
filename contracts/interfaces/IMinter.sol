@@ -7,6 +7,8 @@ interface IMinter {
 
     function getPrice(uint8 _amount) external view returns(uint256 givenPrice);
 
+    function burn(uint256 tokenId) external;
+
     function tokenURI(uint16 _tokenId) external view returns(string memory uri);
 
     function walletOfOwner(address _wallet) external view returns(uint16[] memory ids);

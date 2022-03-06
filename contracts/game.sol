@@ -16,7 +16,7 @@ import "@openzeppelin/contracts/utils/Context.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
-contract Game is IERC721Receiver, Context, VRFConsumerBase{
+contract GameV3 is IERC721Receiver, Context, VRFConsumerBase{
 
     event NewAdmin(address admin);
     event UpdatedStats(uint16 raptor, Stats stats);
@@ -25,6 +25,21 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
     event QPRandomRequested();
     event CompRandomRequested();
     event DRRandomRequested();
+
+    event InjuredRaptor(uint16 raptor);
+    event FightWinner(uint16 raptor);
+    event Fighters(uint16[2] fighters);
+    event Top3(uint16[3] places);
+
+    event QuickPlayRaceStarted(uint16[8] raptors);
+    event QuickPlayRaceWinner(uint16 raptor);
+
+    event CompetitiveRaceStarted(uint16[8] raptors);
+    event CompetitiveRaceWinner(uint16 raptor);
+
+    event DeathRaceStarted(uint16[8] raptors);
+    event DeathRaceWinner(uint16 raptor);
+    event RipRaptor(uint16 raptor);
 
     address private admin;
 
@@ -279,7 +294,7 @@ contract Game is IERC721Receiver, Context, VRFConsumerBase{
 
     //callback function used by VRF Coordinator
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-        require(requestId == vrf.lastRequestId);
+        require(requestId == vrf.lastRequestId, "Err: WRID");
         vrf.randomResult = randomness;
         uint16[8] memory expandedNums;
         uint16 winner;

@@ -232,38 +232,38 @@ describe("Contract Testing", () => {
 
 
     describe("Testing Game Contract", () => {
-        beforeEach(async()=> {
+        // beforeEach(async()=> {
 
-            minter.connect(user2).mint(1, {value: ethers.utils.parseEther("2")});
-            minter.connect(deployer).mint(1);
-            minter.connect(user3).mint(1, {value: ethers.utils.parseEther("2")});
-            minter.connect(payee1).mint(1, {value: ethers.utils.parseEther("2")});
-            minter.connect(payee2).mint(1, {value: ethers.utils.parseEther("2")});
-            minter.connect(payee3).mint(1, {value: ethers.utils.parseEther("2")});
-            minter.connect(addr9).mint(1, {value: ethers.utils.parseEther("2")});
-            minter.connect(addr8).mint(1, {value: ethers.utils.parseEther("2")});
-            minter.connect(addr7).mint(1, {value: ethers.utils.parseEther("2")});
+        //     minter.connect(user2).mint(1, {value: ethers.utils.parseEther("2")});
+        //     minter.connect(deployer).mint(1);
+        //     minter.connect(user3).mint(1, {value: ethers.utils.parseEther("2")});
+        //     minter.connect(payee1).mint(1, {value: ethers.utils.parseEther("2")});
+        //     minter.connect(payee2).mint(1, {value: ethers.utils.parseEther("2")});
+        //     minter.connect(payee3).mint(1, {value: ethers.utils.parseEther("2")});
+        //     minter.connect(addr9).mint(1, {value: ethers.utils.parseEther("2")});
+        //     minter.connect(addr8).mint(1, {value: ethers.utils.parseEther("2")});
+        //     minter.connect(addr7).mint(1, {value: ethers.utils.parseEther("2")});
 
-            await hre.run("fund-link", {
-                contract: game.address,
-                linkaddress: linkToken.address,
-            });
+        //     await hre.run("fund-link", {
+        //         contract: game.address,
+        //         linkaddress: linkToken.address,
+        //     });
             
-        })
+        // })
         
-        it("Should allow the admin to set a race", async() => {
-            await game.connect(deployer).raceSelect(1);
-            expect(await game.currentRace()).to.be.equal(1);
-        })
-        it("Should allow a user to enter their raptor into the race - QP", async() => {
-            await game.connect(deployer).raceSelect(1);
-            let raptors = await minter.connect(user2).walletOfOwner(user2.address);
-            await game.connect(user2).enterRaptorIntoQuickPlay(raptors[0], {value: ethers.utils.parseEther("1")});
-            let currentRaptors = await game.getCurrentQueue();
-            console.log(raptors);
-            console.log(currentRaptors);
-            expect(currentRaptors[0]).to.be.equal(raptors[0]);
-        })
+        // it("Should allow the admin to set a race", async() => {
+        //     await game.connect(deployer).raceSelect(1);
+        //     expect(await game.currentRace()).to.be.equal(1);
+        // })
+        // it("Should allow a user to enter their raptor into the race - QP", async() => {
+        //     await game.connect(deployer).raceSelect(1);
+        //     let raptors = await minter.connect(user2).walletOfOwner(user2.address);
+        //     await game.connect(user2).enterRaptorIntoQuickPlay(raptors[0], {value: ethers.utils.parseEther("1")});
+        //     let currentRaptors = await game.getCurrentQueue();
+        //     console.log(raptors);
+        //     console.log(currentRaptors);
+        //     expect(currentRaptors[0]).to.be.equal(raptors[0]);
+        // })
         it("Should start a QP race", async() => {
             await game.connect(deployer).raceSelect(1);
 
@@ -291,62 +291,95 @@ describe("Contract Testing", () => {
             let addr8Raptors = await minter.connect(addr8).walletOfOwner(addr8.address);
             expect(await game.connect(addr8).enterRaptorIntoQuickPlay(addr8Raptors[0], {value: ethers.utils.parseEther("1")})).to.emit(game, "QPRandomRequested");
         })
-        it("Should start a Comp race", async() => {
-            await game.connect(deployer).raceSelect(2);
+        // it("Should start a Comp race", async() => {
+        //     await game.connect(deployer).raceSelect(2);
 
-            let user2Raptors = await minter.connect(user2).walletOfOwner(user2.address);
-            await game.connect(user2).enterRaptorIntoComp(user2Raptors[0], {value: ethers.utils.parseEther("5")});
+        //     let user2Raptors = await minter.connect(user2).walletOfOwner(user2.address);
+        //     await game.connect(user2).enterRaptorIntoComp(user2Raptors[0], {value: ethers.utils.parseEther("5")});
 
-            let user3Raptors = await minter.connect(user3).walletOfOwner(user3.address);
-            await game.connect(user3).enterRaptorIntoComp(user3Raptors[0], {value: ethers.utils.parseEther("5")});
+        //     let user3Raptors = await minter.connect(user3).walletOfOwner(user3.address);
+        //     await game.connect(user3).enterRaptorIntoComp(user3Raptors[0], {value: ethers.utils.parseEther("5")});
 
-            let deployerRaptors = await minter.connect(deployer).walletOfOwner(deployer.address);
-            await game.connect(deployer).enterRaptorIntoComp(deployerRaptors[0], {value: ethers.utils.parseEther("5")});
+        //     let deployerRaptors = await minter.connect(deployer).walletOfOwner(deployer.address);
+        //     await game.connect(deployer).enterRaptorIntoComp(deployerRaptors[0], {value: ethers.utils.parseEther("5")});
 
-            let payee1Raptors = await minter.connect(payee1).walletOfOwner(payee1.address);
-            await game.connect(payee1).enterRaptorIntoComp(payee1Raptors[0], {value: ethers.utils.parseEther("5")});
+        //     let payee1Raptors = await minter.connect(payee1).walletOfOwner(payee1.address);
+        //     await game.connect(payee1).enterRaptorIntoComp(payee1Raptors[0], {value: ethers.utils.parseEther("5")});
 
-            let payee2Raptors = await minter.connect(payee2).walletOfOwner(payee2.address);
-            await game.connect(payee2).enterRaptorIntoComp(payee2Raptors[0], {value: ethers.utils.parseEther("5")});
+        //     let payee2Raptors = await minter.connect(payee2).walletOfOwner(payee2.address);
+        //     await game.connect(payee2).enterRaptorIntoComp(payee2Raptors[0], {value: ethers.utils.parseEther("5")});
 
-            let payee3Raptors = await minter.connect(payee3).walletOfOwner(payee3.address);
-            await game.connect(payee3).enterRaptorIntoComp(payee3Raptors[0], {value: ethers.utils.parseEther("5")});
+        //     let payee3Raptors = await minter.connect(payee3).walletOfOwner(payee3.address);
+        //     await game.connect(payee3).enterRaptorIntoComp(payee3Raptors[0], {value: ethers.utils.parseEther("5")});
 
-            let addr7Raptors = await minter.connect(addr7).walletOfOwner(addr7.address);
-            await game.connect(addr7).enterRaptorIntoComp(addr7Raptors[0], {value: ethers.utils.parseEther("5")});
+        //     let addr7Raptors = await minter.connect(addr7).walletOfOwner(addr7.address);
+        //     await game.connect(addr7).enterRaptorIntoComp(addr7Raptors[0], {value: ethers.utils.parseEther("5")});
 
-            let addr8Raptors = await minter.connect(addr8).walletOfOwner(addr8.address);
-            expect(await game.connect(addr8).enterRaptorIntoComp(addr8Raptors[0], {value: ethers.utils.parseEther("5")})).to.emit(game, "CompRandomRequested");
-        })
-        it("Should start a DR race", async() => {
-            await game.connect(deployer).raceSelect(3);
+        //     let addr8Raptors = await minter.connect(addr8).walletOfOwner(addr8.address);
+        //     expect(await game.connect(addr8).enterRaptorIntoComp(addr8Raptors[0], {value: ethers.utils.parseEther("5")})).to.emit(game, "CompRandomRequested");
+        // })
+        // it("Should start a DR race", async() => {
+        //     await game.connect(deployer).raceSelect(3);
 
-            let user2Raptors = await minter.connect(user2).walletOfOwner(user2.address);
-            await game.connect(user2).enterRaptorIntoDR(user2Raptors[0], {value: ethers.utils.parseEther("25")});
+        //     let user2Raptors = await minter.connect(user2).walletOfOwner(user2.address);
+        //     await game.connect(user2).enterRaptorIntoDR(user2Raptors[0], {value: ethers.utils.parseEther("25")});
 
-            let user3Raptors = await minter.connect(user3).walletOfOwner(user3.address);
-            await game.connect(user3).enterRaptorIntoDR(user3Raptors[0], {value: ethers.utils.parseEther("25")});
+        //     let user3Raptors = await minter.connect(user3).walletOfOwner(user3.address);
+        //     await game.connect(user3).enterRaptorIntoDR(user3Raptors[0], {value: ethers.utils.parseEther("25")});
 
-            let deployerRaptors = await minter.connect(deployer).walletOfOwner(deployer.address);
-            await game.connect(deployer).enterRaptorIntoDR(deployerRaptors[0], {value: ethers.utils.parseEther("25")});
+        //     let deployerRaptors = await minter.connect(deployer).walletOfOwner(deployer.address);
+        //     await game.connect(deployer).enterRaptorIntoDR(deployerRaptors[0], {value: ethers.utils.parseEther("25")});
 
-            let payee1Raptors = await minter.connect(payee1).walletOfOwner(payee1.address);
-            await game.connect(payee1).enterRaptorIntoDR(payee1Raptors[0], {value: ethers.utils.parseEther("25")});
+        //     let payee1Raptors = await minter.connect(payee1).walletOfOwner(payee1.address);
+        //     await game.connect(payee1).enterRaptorIntoDR(payee1Raptors[0], {value: ethers.utils.parseEther("25")});
 
-            let payee2Raptors = await minter.connect(payee2).walletOfOwner(payee2.address);
-            await game.connect(payee2).enterRaptorIntoDR(payee2Raptors[0], {value: ethers.utils.parseEther("25")});
+        //     let payee2Raptors = await minter.connect(payee2).walletOfOwner(payee2.address);
+        //     await game.connect(payee2).enterRaptorIntoDR(payee2Raptors[0], {value: ethers.utils.parseEther("25")});
 
-            let payee3Raptors = await minter.connect(payee3).walletOfOwner(payee3.address);
-            await game.connect(payee3).enterRaptorIntoDR(payee3Raptors[0], {value: ethers.utils.parseEther("25")});
+        //     let payee3Raptors = await minter.connect(payee3).walletOfOwner(payee3.address);
+        //     await game.connect(payee3).enterRaptorIntoDR(payee3Raptors[0], {value: ethers.utils.parseEther("25")});
 
-            let addr7Raptors = await minter.connect(addr7).walletOfOwner(addr7.address);
-            await game.connect(addr7).enterRaptorIntoDR(addr7Raptors[0], {value: ethers.utils.parseEther("25")});
+        //     let addr7Raptors = await minter.connect(addr7).walletOfOwner(addr7.address);
+        //     await game.connect(addr7).enterRaptorIntoDR(addr7Raptors[0], {value: ethers.utils.parseEther("25")});
 
-            let addr8Raptors = await minter.connect(addr8).walletOfOwner(addr8.address);
-            expect(await game.connect(addr8).enterRaptorIntoDR(addr8Raptors[0], {value: ethers.utils.parseEther("25")})).to.emit(game, "DRRandomRequested");    
-        })
+        //     let addr8Raptors = await minter.connect(addr8).walletOfOwner(addr8.address);
+        //     expect(await game.connect(addr8).enterRaptorIntoDR(addr8Raptors[0], {value: ethers.utils.parseEther("25")})).to.emit(game, "DRRandomRequested");    
+        // })
         // it("Should payout correctly on a QP race", async() => {
+
+        //     let communityBal = ethers.utils.formatEther(await provider.getBalance(user3.address));
+        //     await game.connect(deployer).raceSelect(1);
+
+        //     let user2Raptors = await minter.connect(user2).walletOfOwner(user2.address);
+        //     await game.connect(user2).enterRaptorIntoQuickPlay(user2Raptors[0], {value: ethers.utils.parseEther("1")});
+
+        //     let addr9Raptors = await minter.connect(addr9).walletOfOwner(addr9.address);
+        //     await game.connect(addr9).enterRaptorIntoQuickPlay(addr9Raptors[0], {value: ethers.utils.parseEther("1")});
+
+        //     let deployerRaptors = await minter.connect(deployer).walletOfOwner(deployer.address);
+        //     await game.connect(deployer).enterRaptorIntoQuickPlay(deployerRaptors[0], {value: ethers.utils.parseEther("1")});
+
+        //     let payee1Raptors = await minter.connect(payee1).walletOfOwner(payee1.address);
+        //     await game.connect(payee1).enterRaptorIntoQuickPlay(payee1Raptors[0], {value: ethers.utils.parseEther("1")});
+
+        //     let payee2Raptors = await minter.connect(payee2).walletOfOwner(payee2.address);
+        //     await game.connect(payee2).enterRaptorIntoQuickPlay(payee2Raptors[0], {value: ethers.utils.parseEther("1")});
+
+        //     let payee3Raptors = await minter.connect(payee3).walletOfOwner(payee3.address);
+        //     await game.connect(payee3).enterRaptorIntoQuickPlay(payee3Raptors[0], {value: ethers.utils.parseEther("1")});
+
+        //     let addr7Raptors = await minter.connect(addr7).walletOfOwner(addr7.address);
+        //     await game.connect(addr7).enterRaptorIntoQuickPlay(addr7Raptors[0], {value: ethers.utils.parseEther("1")});
+
+        //     let addr8Raptors = await minter.connect(addr8).walletOfOwner(addr8.address);
+        //     await game.connect(addr8).enterRaptorIntoQuickPlay(addr8Raptors[0], {value: ethers.utils.parseEther("1")});
+
             
+        //     await ethers.provider.send("evm_increaseTime", [3600 * 24 * 2]);
+            
+        //     let endingCommunityBal = ethers.utils.formatEther(await provider.getBalance(user3.address));
+        //     let diff = endingCommunityBal - communityBal;
+        //     expect(diff).to.be.equal(8/20)
         // })
         // it("Should payout correctly on a Comp race", async() => {
 
