@@ -187,7 +187,7 @@ library gameLib {
         lowest = 20000;
         i = 0;
         for(; i< 8; i++){
-            if(i != fighters[0] && i != fighters[1] && i != places[0] && i != places[2]){
+            if(i != fighters[0] && i != fighters[1] && i != places[0] && i != places[1]){
                 if(time[i]<lowest){
                     lowest = uint16(time[i]); 
                     places[2] = i;            
