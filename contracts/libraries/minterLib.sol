@@ -50,4 +50,11 @@ library minterLib {
             givenPrice = price * _amount;
         }
     }
+
+    function totalShares(uint16[] memory shares) internal pure returns(uint16 result ){
+        result = 0;
+        for(uint i=0; i< shares.length; i++){
+            result += shares[i];
+        }
+    }
 }

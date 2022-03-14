@@ -29,7 +29,7 @@ contract MinterV3 is ERC721Enumerable, VRFConsumerBase{
 
     //metadata URI vars
     string private baseURI = "https://gateway.pinata.cloud/";
-    string private CID = "Some CID/";
+    string private ciD = "Some CID/";
     string private extension = ".JSON";
     string private notRevealed = "NotRevealed Hash";
 
@@ -76,6 +76,7 @@ contract MinterV3 is ERC721Enumerable, VRFConsumerBase{
 
     //wallets that will funds will be automatically split between
     address[] private paymentsTo;
+    uint16[] private shares;
 
     //checks if the raptor is a raptor that was rewarded to a V1 holder
     mapping(uint16 => bool) private foundingRaptor;
@@ -83,13 +84,15 @@ contract MinterV3 is ERC721Enumerable, VRFConsumerBase{
     constructor(
         address[] memory _rewardedAddresses,
         address[] memory _paymentsTo,
+        uint16[] memory _shares,
         address _vrfCoordinator,
         address _linkToken,
         bytes32 _keyHash,
-        uint256 _OracleFee
+        uint256 _oracleFee
         )ERC721("Racing Raptors V2", "RR") VRFConsumerBase( _vrfCoordinator, _linkToken){
+            require(_paymentsTo.length == _shares.length);
             keyHash = _keyHash;
-            fee = _OracleFee;
+            fee = _oracleFee;
             rewardedAddresses = _rewardedAddresses;
             active = true;
             admin = _msgSender();
@@ -131,8 +134,8 @@ contract MinterV3 is ERC721Enumerable, VRFConsumerBase{
 
     //sets the IPFS hash for the API link to the image
     //only accessible by admin
-    function setCID(string memory _CID) public onlyAdmin {
-        CID = _CID;
+    function setCID(string memory _ciD) public onlyAdmin {
+        ciD = _ciD;
     }
     
     //sets the IPFS hash for the API link to the unrevealed NFT image
@@ -159,7 +162,7 @@ contract MinterV3 is ERC721Enumerable, VRFConsumerBase{
 
     //unreveals all NFT image API links
     //only accessible by admin
-    function reveal() onlyAdmin public {
+    function reveal() public onlyAdmin {
         revealed = true;
     }
 
@@ -168,6 +171,12 @@ contract MinterV3 is ERC721Enumerable, VRFConsumerBase{
     //this is kept in incase of any unforseen security problems - not expected to happen but it doesn't hurt
     function flipSaleState() public onlyAdmin {
         active = !active;
+    }
+
+    function updateSplit(address[] memory _paymentsTo, uint16[] memory _shares) public onlyAdmin {
+        require(_paymentsTo.length == _shares.length);
+        paymentsTo = _paymentsTo;
+        shares = _shares;
     }
 
     //sets the admin wallet that controls the contract
@@ -183,15 +192,17 @@ contract MinterV3 is ERC721Enumerable, VRFConsumerBase{
         require(_exists(_tokenId));
 
         if(!revealed) {uri = string(abi.encodePacked(baseURI, notRevealed));}
-        else{uri = string(abi.encodePacked(baseURI, CID, string(abi.encodePacked(_tokenId)), extension));}
+        else{uri = string(abi.encodePacked(baseURI, ciD, string(abi.encodePacked(_tokenId)), extension));}
 
     }
 
     //automatically splits funds between designated wallets
     function splitFunds(uint256 fundsToSplit) public payable {
-        require(payable(paymentsTo[0]).send(fundsToSplit * 25/100));
-        require(payable(paymentsTo[1]).send(fundsToSplit * 50/100));
-        require(payable(paymentsTo[2]).send(fundsToSplit * 25/100));
+        uint16 totalShares = minterLib.totalShares(shares);
+
+        for(uint i=0; i<shares.length; i++){
+            require(payable(paymentsTo[i]).transfer(fundsToSplit * shares[i]/totalShares));
+        }
     }
 
     //passed the msg.value to the above function

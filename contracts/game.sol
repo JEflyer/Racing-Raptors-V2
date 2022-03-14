@@ -101,7 +101,7 @@ contract GameV3 is IERC721Receiver, Context, VRFConsumerBase{
     }
 
     //used for returning a string value of the game
-    string[] raceNames =[
+    string[] private raceNames =[
         "StandBy",
         "QuickPlay",
         "Competitive",
@@ -186,20 +186,20 @@ contract GameV3 is IERC721Receiver, Context, VRFConsumerBase{
     //Quickplay Entry
     function enterRaptorIntoQuickPlay(uint16 raptor) public payable {
         //check that current race is enabled
-        require(uint(currentRace) == 1, "This race queue is not available at the moment");
+        require(uint(currentRace) == 1, "Wrong race");
 
 
         //check if there are spaces left
-        require(currentRaptors[7] ==0, "You can not join at this time");
+        require(currentRaptors[7] ==0, "No space");
 
         //check the raptor is owned by msg.Sender
-        require(gameLib.owns(raptor), "You do not own this raptor");
+        require(gameLib.owns(raptor), "not your raptor");
 
         //check that raptor is not on cooldown
-        require(gameLib.getTime(raptor) < block.timestamp, "Your raptor is not available right now");
+        require(gameLib.getTime(raptor) < block.timestamp, "on cooldown");
 
         //check that msg.value is the entrance fee
-        require(msg.value == QPFee, "You have not sent enough funds");
+        require(msg.value == QPFee, "funds");
 
         //add msg.value to pot
         pot += msg.value;
@@ -220,19 +220,19 @@ contract GameV3 is IERC721Receiver, Context, VRFConsumerBase{
     //Competitive Entry
     function enterRaptorIntoComp(uint16 raptor) public payable {
         //check that current race is enabled
-        require(uint(currentRace) == 2, "This race queue is not available at the moment");
+        require(uint(currentRace) == 2, "wrong race");
 
         //check if there are spaces left
-        require(currentRaptors[7] ==0, "You can not join at this time");
+        require(currentRaptors[7] ==0, "no space");
 
         //check that raptor is not on cooldown
-        require(gameLib.getTime(raptor) < block.timestamp, "Your raptor is not available right now");
+        require(gameLib.getTime(raptor) < block.timestamp, "on cooldown");
 
         //check the raptor is owned by msg.Sender
-        require(gameLib.owns(raptor), "You do not own this raptor");
+        require(gameLib.owns(raptor), "not your raptor");
 
         //check that msg.value is the entrance fee
-        require(msg.value == CompFee, "You have not sent enough funds");
+        require(msg.value == CompFee, "funds");
 
         //add msg.value to pot
         pot += msg.value;
@@ -253,21 +253,21 @@ contract GameV3 is IERC721Receiver, Context, VRFConsumerBase{
     //DeathRace Entry
     function enterRaptorIntoDR(uint16 raptor) public payable {
         //check that current race is enabled
-        require(uint(currentRace) == 3, "This race queue is not available at the moment");
+        require(uint(currentRace) == 3, "wrong race");
 
         //check if there are spaces left
-        require(currentRaptors[7] ==0, "You can not join at this time");
+        require(currentRaptors[7] ==0, "no space");
 
         //check that raptor is not on cooldown
-        require(gameLib.getTime(raptor) < block.timestamp, "Your raptor is not available right now");
+        require(gameLib.getTime(raptor) < block.timestamp, "on cooldown");
 
         //check the raptor is owned by msg.Sender
-        require(gameLib.owns(raptor), "You do not own this raptor");
+        require(gameLib.owns(raptor), "not your raptor");
 
         // gameLib._approve(raptor);
 
         //check that msg.value is the entrance fee
-        require(msg.value == DRFee, "You have not sent enough funds");
+        require(msg.value == DRFee, "funds");
 
         //add msg.value to pot
         pot += msg.value;
@@ -291,7 +291,7 @@ contract GameV3 is IERC721Receiver, Context, VRFConsumerBase{
         address from, 
         uint256 tokenId, 
         bytes calldata data) external pure override returns (bytes4) {
-        revert();
+        revert("Nah bro");
         return IERC721Receiver.onERC721Received.selector;
     }
 
